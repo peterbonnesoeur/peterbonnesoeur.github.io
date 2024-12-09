@@ -1,183 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
-<!-- <head>
-<meta charset="UTF-8">
-<title>Markdown to LinkedIn Converter</title>
-<style>
-    body {
+
+<head>
+
+    <!-- crumbs -->
+    <meta content="" name="markdown">
+    <meta content="" name="linkedin">
+    <meta content="" name="maxime bonnesoeur">
+    <meta content="" name="keywords">
+
+    <!-- Favicon -->
+    <link href="../assets/img/classic-logo.svg" rel="icon">
+    <link href="../assets/img/classic-logo.svg" rel="apple-touch-icon">
+
+    <meta charset="UTF-8">
+    <title>Markdown to LinkedIn Converter</title>
+    <style>
+        /* Reset some default styles */
+        body, h1, h2, p, ul, ol, li, textarea, pre, a {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        }
+
+        body {
         font-family: Arial, sans-serif;
+        background-color: #f0f2f5;
+        color: #333;
+        line-height: 1.6;
+        padding-top: 60px; /* Space for fixed navbar */
+        }
+
+        /* Navigation Bar */
+        .navbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background-color: #0073b1; /* LinkedIn Blue */
+        padding: 15px 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        z-index: 1000;
+        }
+
+        .navbar a {
+        color: #fff;
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        transition: background-color 0.3s, color 0.3s;
+        padding: 8px 12px;
+        border-radius: 4px;
+        }
+
+        .navbar a:hover {
+        background-color: #005582;
+        }
+
+        .navbar a.home-btn::before {
+        content: "🏠"; /* Home icon */
+        margin-right: 8px;
+        font-size: 20px;
+        }
+
+        /* Container for content */
+        .container {
         max-width: 800px;
         margin: 40px auto;
-        padding: 10px;
-    }
-    h1 {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
         text-align: center;
-    }
-    textarea {
+        margin-bottom: 20px;
+        color: #0073b1;
+        }
+
+        p.description {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #555;
+        }
+
+        textarea {
         width: 100%;
         height: 200px;
         font-family: monospace;
         margin-bottom: 20px;
-        box-sizing: border-box;
         padding: 10px;
-    }
-    pre {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        resize: vertical;
+        font-size: 16px;
+        }
+
+        pre {
         background: #f9f9f9;
         border: 1px solid #ccc;
-        padding: 10px;
+        padding: 15px;
         white-space: pre-wrap;
         word-wrap: break-word;
-    }
-    button {
-        padding: 10px 15px;
-        cursor: pointer;
-        font-size: 14px;
-    }
-</style>
+        border-radius: 4px;
+        min-height: 200px;
+        overflow: auto;
+        font-size: 16px;
+        }
+
+        h2 {
+        margin-top: 30px;
+        margin-bottom: 15px;
+        color: #0073b1;
+        }
+
+        /* Footer (optional) */
+        .footer {
+        text-align: center;
+        margin-top: 40px;
+        color: #777;
+        }
+
+        .footer a {
+        color: #0073b1;
+        text-decoration: none;
+        font-weight: bold;
+        }
+
+        .footer a:hover {
+        text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+        .navbar a {
+            font-size: 16px;
+            padding: 6px 10px;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        textarea, pre {
+            font-size: 14px;
+        }
+        }
+    </style>
 </head>
-<body> -->
 
-    <head>
-        <meta charset="UTF-8">
-        <title>Markdown to LinkedIn Converter</title>
-        <style>
-          /* Reset some default styles */
-          body, h1, h2, p, ul, ol, li, textarea, pre, a {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
 
-          body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            line-height: 1.6;
-            padding-top: 60px; /* Space for fixed navbar */
-          }
-
-          /* Navigation Bar */
-          .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background-color: #0073b1; /* LinkedIn Blue */
-            padding: 15px 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            z-index: 1000;
-          }
-
-          .navbar a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            transition: background-color 0.3s, color 0.3s;
-            padding: 8px 12px;
-            border-radius: 4px;
-          }
-
-          .navbar a:hover {
-            background-color: #005582;
-          }
-
-          .navbar a.home-btn::before {
-            content: "🏠"; /* Home icon */
-            margin-right: 8px;
-            font-size: 20px;
-          }
-
-          /* Container for content */
-          .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-          }
-
-          h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            color: #0073b1;
-          }
-
-          p.description {
-            text-align: center;
-            margin-bottom: 30px;
-            color: #555;
-          }
-
-          textarea {
-            width: 100%;
-            height: 200px;
-            font-family: monospace;
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            resize: vertical;
-            font-size: 16px;
-          }
-
-          pre {
-            background: #f9f9f9;
-            border: 1px solid #ccc;
-            padding: 15px;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            border-radius: 4px;
-            min-height: 200px;
-            overflow: auto;
-            font-size: 16px;
-          }
-
-          h2 {
-            margin-top: 30px;
-            margin-bottom: 15px;
-            color: #0073b1;
-          }
-
-          /* Footer (optional) */
-          .footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #777;
-          }
-
-          .footer a {
-            color: #0073b1;
-            text-decoration: none;
-            font-weight: bold;
-          }
-
-          .footer a:hover {
-            text-decoration: underline;
-          }
-
-          /* Responsive Design */
-          @media (max-width: 600px) {
-            .navbar a {
-              font-size: 16px;
-              padding: 6px 10px;
-            }
-
-            h1 {
-              font-size: 24px;
-            }
-
-            textarea, pre {
-              font-size: 14px;
-            }
-          }
-        </style>
-      </head>
-      <body>
-
+<body>
 
 <!-- Navigation Bar -->
 <nav class="navbar">
