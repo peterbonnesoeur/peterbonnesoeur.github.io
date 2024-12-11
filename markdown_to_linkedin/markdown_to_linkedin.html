@@ -10,8 +10,8 @@
     <meta content="" name="keywords">
 
     <!-- Favicon -->
-    <link href="../assets/img/classic-logo.svg" rel="icon">
-    <link href="../assets/img/classic-logo.svg" rel="apple-touch-icon">
+    <link href="../assets/img/text-converters/markdown-linkedin.svg" rel="icon">
+    <link href="../assets/img/text-converters/markdown-linkedin.svg" rel="apple-touch-icon">
 
     <meta charset="UTF-8">
     <title>Markdown to LinkedIn Converter</title>
@@ -59,8 +59,17 @@
         background-color: #005582;
         }
 
+
+        .navbar a.home-btn img {
+            display: inline-block;
+            vertical-align: middle;
+            width: 20px; /* Adjust size as needed */
+            height: 20px; /* Maintain aspect ratio */
+            margin-right: 8px; /* Space between the icon and text */
+        }
+
         .navbar a.home-btn::before {
-        content: "🏠"; /* Home icon */
+        /* content: "🏠"; Home icon */
         margin-right: 8px;
         font-size: 20px;
         }
@@ -157,7 +166,11 @@
 
 <!-- Navigation Bar -->
 <nav class="navbar">
-<a href="/" class="home-btn">Click here for shameless self advertising</a>
+    <a href="/" class="home-btn">
+        <img src="../assets/img/text-converters/markdown-linkedin.svg" alt="Home Icon">
+        Click here for shameless self advertising
+
+    </a>
 </nav>
 
 <!-- Main Container -->
