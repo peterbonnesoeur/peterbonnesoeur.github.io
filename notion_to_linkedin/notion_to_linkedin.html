@@ -37,14 +37,14 @@
             top: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(90deg, #0073b1, #faf5e6); /* Blend Notion and LinkedIn colors */
+            background: linear-gradient(90deg, #faf5e6, #0073b1); /* Blend Notion and LinkedIn colors */
             padding: 15px 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
 
         .navbar a {
-            color: #ffffff;
+            color: #0073b1;
             text-decoration: none;
             font-size: 18px;
             font-weight: bold;
@@ -57,10 +57,19 @@
 
         .navbar a:hover {
             background-color: #004261; /* Slightly darker */
+            color: #ffffff;
+        }
+
+        .navbar a.home-btn img {
+            display: inline-block;
+            vertical-align: middle;
+            width: 20px; /* Adjust size as needed */
+            height: 20px; /* Maintain aspect ratio */
+            margin-right: 8px; /* Space between the icon and text */
         }
 
         .navbar a.home-btn::before {
-            content: "🏠"; /* Home icon */
+            /* content: "🏠"; Home icon */
             margin-right: 8px;
             font-size: 20px;
         }
@@ -160,13 +169,18 @@
 
 <!-- Navigation Bar -->
 <nav class="navbar">
-    <a href="/" class="home-btn">Click here for shameless self advertising</a>
+    <a href="/" class="home-btn">
+        <img src="../assets/img/text-converters/notion-linkedin.svg" alt="Home Icon">
+        Click here for shameless self advertising
+
+    </a>
 </nav>
 
 <!-- Main Content -->
 <div class="container">
 
     <h1>Notion to LinkedIn Converter</h1>
+    <p class="description">Easily transform your Notion content into LinkedIn-ready text.</p>
     <p class="description">Easily transform your Notion content into LinkedIn-ready text.</p>
 
     <textarea id="markdownInput" placeholder="Enter your Notion text here..."></textarea>
@@ -184,89 +198,162 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 
-    const sansSerifBoldA = Array.from("𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭");
-    const sansSerifBolda = Array.from("𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇");
-    const sansSerifBoldDigits = Array.from("𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵");
+const sansSerifBoldA = Array.from("𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭");
+  const sansSerifBolda = Array.from("𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇");
+  const sansSerifBoldDigits = Array.from("𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵");
 
-    const sansSerifItalicA = Array.from("𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡");
-    const sansSerifItalica = Array.from("𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻");
+  const sansSerifItalicA = Array.from("𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡");
+  const sansSerifItalica = Array.from("𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻");
 
-    const strikethroughChar = "̶";
 
-    function mapChars(text, bold = false, italic = false, strikethrough = false) {
-        let Aset = null, aSet = null, dSet = null;
-        if (bold) {
-            Aset = sansSerifBoldA; aSet = sansSerifBolda; dSet = sansSerifBoldDigits;
-        } else if (italic) {
-            Aset = sansSerifItalicA; aSet = sansSerifItalica;
-        }
-        let transformed = [...text].map(ch => {
-            if (Aset && /[A-Z]/.test(ch)) {
-                return Aset[ch.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0)];
-            } else if (aSet && /[a-z]/.test(ch)) {
-                return aSet[ch.charCodeAt(0) - 'a'.charCodeAt(0)];
-            } else if (dSet && /\d/.test(ch)) {
-                return dSet[ch.charCodeAt(0) - '0'.charCodeAt(0)];
-            } else if (strikethrough) {
-                return ch + strikethroughChar;
-            } else {
-                return ch;
-            }
-        }).join("");
-        return transformed;
+  function logMappingInfo(message) {
+    console.log(message);
+  }
+  // Map characters
+  function mapChars(text, bold=false, italic=false, underline=false, code=false) {
+    if (code) return text; // No mapping in code blocks
+
+    let Aset = null, aSet = null, dSet = null;
+    if (bold) {
+      Aset = sansSerifBoldA; aSet = sansSerifBolda; dSet = sansSerifBoldDigits;
+      logMappingInfo("Bold is true. Aset: " + JSON.stringify(Aset));
+    } else if (italic) {
+      Aset = sansSerifItalicA; aSet = sansSerifItalica;
+      logMappingInfo("Italic is true. Aset: " + JSON.stringify(Aset));
+      // no italic digits
     }
 
-    function processNode(node) {
-        if (node.nodeType === Node.TEXT_NODE) {
-            return node.textContent;
-        }
-
-        if (node.nodeType === Node.ELEMENT_NODE) {
-            const tagName = node.tagName.toLowerCase();
-            const content = Array.from(node.childNodes).map(processNode).join("");
-
-            if (tagName === 'p') {
-                return content.trim() + "\n\n";
-            } else if (tagName === 'li') {
-                const isCheckbox = content.match(/^\[([ xX])\] ?(.+)/);
-                if (isCheckbox) {
-                    const checkboxState = isCheckbox[1].toLowerCase() === "x" ? "☑" : "☐";
-                    return `${checkboxState} ${isCheckbox[2]}\n`;
-                }
-                return "• " + content + "\n";
-            } else if (tagName.match(/^h[1-6]$/)) {
-                return mapChars(content.toUpperCase(), bold = true) + "\n\n";
-            } else if (tagName === 'strong' || tagName === 'b') {
-                return mapChars(content, bold = true);
-            } else if (tagName === 'em' || tagName === 'i') {
-                return mapChars(content, italic = true);
-            } else if (tagName === 'del') {
-                return mapChars(content, strikethrough = true);
-            } else {
-                return content;
-            }
-        }
-        return "";
+  let transformed = [...text].map(ch => {
+    if (Aset && /[A-Z]/.test(ch)) {
+        // logMappingInfo(`Mapping uppercase char '${ch}' to '${Aset[code]}' - '${ch.toUpperCase().charCodeAt(0)-'A'.charCodeAt(0)}`);
+      return Aset[ch.toUpperCase().charCodeAt(0)-'A'.charCodeAt(0)];
     }
-
-    function convertNotionToLinkedIn(mdText) {
-        const html = marked.parse(mdText);
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        let result = processNode(doc.body);
-        result = result.trim().replace(/\n{3,}/g, "\n\n");
-        return result;
+    else if (aSet && /[a-z]/.test(ch)) {
+      return aSet[ch.charCodeAt(0)-'a'.charCodeAt(0)];
+    } else if (dSet && /\d/.test(ch)) {
+      return dSet[ch.charCodeAt(0)-'0'.charCodeAt(0)];
+    } else {
+      return ch;
     }
+  }).join("");
 
-    const textarea = document.getElementById('markdownInput');
-    const outputEl = document.getElementById('output');
+  return transformed;
+}
 
-    textarea.addEventListener('input', () => {
-        const input = textarea.value;
-        const output = convertNotionToLinkedIn(input);
-        outputEl.textContent = output;
+function isBold(el) {
+  return el && (el.matches('strong, b') || el.closest('strong, b'));
+}
+function isItalic(el) {
+  return el && (el.matches('em, i') || el.closest('em, i'));
+}
+function isUnderline(el) {
+  return el && (el.matches('u') || el.closest('u'));
+}
+
+function replaceCheckboxSyntax(content) {
+    return content.replace(/\[([ xX])\]\s?(.*)?/g, (match, p1, p2) => {
+        const checkboxState = p1.toLowerCase() === "x" ? "☑" : "☐";
+        return `${checkboxState}${p2 ? " " + p2.trim() : ""}`;
     });
+}
+
+function convertNotionToLinkedIn(mdText) {
+  const html = marked.parse(mdText);
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+
+  function processNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      let p = node.parentElement;
+      let bold = isBold(p);
+      let italic = isItalic(p);
+      let underline = isUnderline(p);
+      let code = p && (p.matches('code, pre') || p.closest('code, pre'));
+      return mapChars(node.textContent, bold, italic, underline && !code, code);
+    }
+
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      let tagName = node.tagName.toLowerCase();
+      let content = Array.from(node.childNodes).map(processNode).join("");
+
+      logMappingInfo(replaceCheckboxSyntax(content))
+
+      if (tagName === 'p') {
+        let bold = isBold(node);
+        let italic = isItalic(node);
+        let underline = isUnderline(node);
+        content = mapChars(replaceCheckboxSyntax(content), bold, italic, underline, false);
+        return content.trim() + "\n\n";
+      } else if (tagName === 'br') {
+        return "\n";
+      } else if (tagName === 'hr') {
+        return "\n----\n\n";
+      } else if (['ul','ol'].includes(tagName)) {
+        return replaceCheckboxSyntax(content.trim()) + "\n\n";
+      } else if (tagName === 'li') {
+        // content = content.replace(/\[([ xX])\]\s?(.*)?/g, (match, p1, p2) => {
+        // const checkboxState = p1.toLowerCase() === "x" ? "☑" : "☐";
+        //     return `${checkboxState}${p2 ? " " + p2.trim() : ""}`;
+        // });
+        return "• " + replaceCheckboxSyntax(content) + "\n";
+      } else if (tagName.match(/^h[1-6]$/)) {
+        // uppercase + bold
+        let upper = replaceCheckboxSyntax(content.toUpperCase());
+        upper = mapChars(upper, true, false, false, false);
+        return upper + "\n\n";
+      } else if (tagName === 'code') {
+        // Inline code
+        return "`" + node.textContent + "`";
+      } else if (tagName === 'pre') {
+        // code block
+        let codeText = replaceCheckboxSyntax(node.textContent);
+        return "\n```\n" + codeText + "\n```\n";
+      } else if (tagName === 'a') {
+        let href = node.getAttribute('href');
+        let bold = isBold(node);
+        let italic = isItalic(node);
+        let underline = isUnderline(node);
+        let transformed = mapChars(content, bold, italic, underline, false);
+        if (href) {
+          return transformed + " (" + href + ")";
+        }  else if (tagName === 'img') {
+            // Handle images
+            let alt = node.getAttribute('alt') || '';
+            let src = node.getAttribute('src');
+            if (src) {
+            return `![${alt}](${src})`; // Markdown-style image
+            }
+        }
+        return transformed;
+      } else {
+        // inline elements like span, em, strong, u
+        let bold = isBold(node);
+        let italic = isItalic(node);
+        let underline = isUnderline(node);
+        return mapChars(content, bold, italic, underline, false);
+      }
+    }
+    return "";
+  }
+
+  let result = processNode(doc.body);
+
+  // Cleanup extra blank lines
+  result = result.trim();
+  result = result.replace(/\n{3,}/g, "\n\n");
+  return result;
+}
+
+
+const textarea = document.getElementById('markdownInput');
+const outputEl = document.getElementById('output');
+
+// Update output as user types
+textarea.addEventListener('input', () => {
+  const input = textarea.value;
+  const output = convertNotionToLinkedIn(input);
+  outputEl.textContent = output;
+});
 </script>
 
 </body>
