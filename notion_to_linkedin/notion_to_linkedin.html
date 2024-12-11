@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- Metadata -->
+    <meta charset="UTF-8">
+    <meta name="author" content="Maxime Bonnesoeur">
+    <meta name="keywords" content="Notion, LinkedIn, Converter">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon -->
+    <link href="../assets/img/text-converters/notion-linkedin.svg" rel="icon">
+    <link href="./assets/img/text-converters/notion-linkedin.svg" rel="apple-touch-icon">
+
+
+
+    <style>
+        /* Reset and Default Styles */
+        body, h1, h2, p, ul, ol, li, textarea, pre, a {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f9fc; /* Notion light gray */
+            color: #333333;
+            line-height: 1.6;
+            padding-top: 70px; /* Space for fixed navbar */
+        }
+
+        /* Navigation Bar */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(90deg, #0073b1, #faf5e6); /* Blend Notion and LinkedIn colors */
+            padding: 15px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .navbar a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .navbar a:hover {
+            background-color: #004261; /* Slightly darker */
+        }
+
+        .navbar a.home-btn::before {
+            content: "🏠"; /* Home icon */
+            margin-right: 8px;
+            font-size: 20px;
+        }
+
+        /* Container for Content */
+        .container {
+            max-width: 750px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #0073b1; /* Blend Notion and LinkedIn colors */
+        }
+
+        p.description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666666;
+        }
+
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 16px;
+        }
+
+        pre {
+            background: #f9f9f9;
+            border: 1px solid #cccccc;
+            padding: 15px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border-radius: 4px;
+            min-height: 200px;
+            overflow: auto;
+            font-size: 16px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            color: #0073b1;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #777;
+        }
+
+        .footer a {
+            color: #0073b1;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .navbar a {
+                font-size: 16px;
+                padding: 6px 10px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            textarea, pre {
+                font-size: 14px;
+            }
+        }
+    </style>
+    <title>Notion to LinkedIn Converter</title>
+
+</head>
+
+
+
+<body>
+
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <a href="/" class="home-btn">Click here for shameless self advertising</a>
+</nav>
+
+<!-- Main Content -->
+<div class="container">
+
+    <h1>Notion to LinkedIn Converter</h1>
+    <p class="description">Easily transform your Notion content into LinkedIn-ready text.</p>
+
+    <textarea id="markdownInput" placeholder="Enter your Notion text here..."></textarea>
+
+    <h2>Converted Output:</h2>
+    <pre id="output"></pre>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <p>&copy; 2024 Maxime Bonnesoeur. Bridging Notion and LinkedIn with 💙.</p>
+</div>
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+
+    const sansSerifBoldA = Array.from("𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭");
+    const sansSerifBolda = Array.from("𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇");
+    const sansSerifBoldDigits = Array.from("𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵");
+
+    const sansSerifItalicA = Array.from("𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡");
+    const sansSerifItalica = Array.from("𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻");
+
+    const strikethroughChar = "̶";
+
+    function mapChars(text, bold = false, italic = false, strikethrough = false) {
+        let Aset = null, aSet = null, dSet = null;
+        if (bold) {
+            Aset = sansSerifBoldA; aSet = sansSerifBolda; dSet = sansSerifBoldDigits;
+        } else if (italic) {
+            Aset = sansSerifItalicA; aSet = sansSerifItalica;
+        }
+        let transformed = [...text].map(ch => {
+            if (Aset && /[A-Z]/.test(ch)) {
+                return Aset[ch.toUpperCase().charCodeAt(0) - 'A'.charCodeAt(0)];
+            } else if (aSet && /[a-z]/.test(ch)) {
+                return aSet[ch.charCodeAt(0) - 'a'.charCodeAt(0)];
+            } else if (dSet && /\d/.test(ch)) {
+                return dSet[ch.charCodeAt(0) - '0'.charCodeAt(0)];
+            } else if (strikethrough) {
+                return ch + strikethroughChar;
+            } else {
+                return ch;
+            }
+        }).join("");
+        return transformed;
+    }
+
+    function processNode(node) {
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent;
+        }
+
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const tagName = node.tagName.toLowerCase();
+            const content = Array.from(node.childNodes).map(processNode).join("");
+
+            if (tagName === 'p') {
+                return content.trim() + "\n\n";
+            } else if (tagName === 'li') {
+                const isCheckbox = content.match(/^\[([ xX])\] ?(.+)/);
+                if (isCheckbox) {
+                    const checkboxState = isCheckbox[1].toLowerCase() === "x" ? "☑" : "☐";
+                    return `${checkboxState} ${isCheckbox[2]}\n`;
+                }
+                return "• " + content + "\n";
+            } else if (tagName.match(/^h[1-6]$/)) {
+                return mapChars(content.toUpperCase(), bold = true) + "\n\n";
+            } else if (tagName === 'strong' || tagName === 'b') {
+                return mapChars(content, bold = true);
+            } else if (tagName === 'em' || tagName === 'i') {
+                return mapChars(content, italic = true);
+            } else if (tagName === 'del') {
+                return mapChars(content, strikethrough = true);
+            } else {
+                return content;
+            }
+        }
+        return "";
+    }
+
+    function convertNotionToLinkedIn(mdText) {
+        const html = marked.parse(mdText);
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        let result = processNode(doc.body);
+        result = result.trim().replace(/\n{3,}/g, "\n\n");
+        return result;
+    }
+
+    const textarea = document.getElementById('markdownInput');
+    const outputEl = document.getElementById('output');
+
+    textarea.addEventListener('input', () => {
+        const input = textarea.value;
+        const output = convertNotionToLinkedIn(input);
+        outputEl.textContent = output;
+    });
+</script>
+
+</body>
+
+</html>
