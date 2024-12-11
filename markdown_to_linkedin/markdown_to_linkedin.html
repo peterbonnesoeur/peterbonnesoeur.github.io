@@ -185,31 +185,31 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
 
-const sansSerifBoldA = Array.from("𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭");
-const sansSerifBolda = Array.from("𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇");
-const sansSerifBoldDigits = Array.from("𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵");
+  const sansSerifBoldA = Array.from("𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭");
+  const sansSerifBolda = Array.from("𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇");
+  const sansSerifBoldDigits = Array.from("𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵");
 
-const sansSerifItalicA = Array.from("𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡");
-const sansSerifItalica = Array.from("𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻");
+  const sansSerifItalicA = Array.from("𝘈𝘉𝘊𝘋𝘌𝘍𝘎𝘏𝘐𝘑𝘒𝘓𝘔𝘕𝘖𝘗𝘘𝘙𝘚𝘛𝘜𝘝𝘞𝘟𝘠𝘡");
+  const sansSerifItalica = Array.from("𝘢𝘣𝘤𝘥𝘦𝘧𝘨𝘩𝘪𝘫𝘬𝘭𝘮𝘯𝘰𝘱𝘲𝘳𝘴𝘵𝘶𝘷𝘸𝘹𝘺𝘻");
 
 
-function logMappingInfo(message) {
-  console.log(message);
-}
-// Map characters
-function mapChars(text, bold=false, italic=false, underline=false, code=false) {
-  if (code) return text; // No mapping in code blocks
-
-  let Aset = null, aSet = null, dSet = null;
-  if (bold) {
-    Aset = sansSerifBoldA; aSet = sansSerifBolda; dSet = sansSerifBoldDigits;
-    logMappingInfo("Bold is true. Aset: " + JSON.stringify(Aset));
-  } else if (italic) {
-    Aset = sansSerifItalicA; aSet = sansSerifItalica;
-    logMappingInfo("Italic is true. Aset: " + JSON.stringify(Aset));
-
-    // no italic digits
+  function logMappingInfo(message) {
+    console.log(message);
   }
+  // Map characters
+  function mapChars(text, bold=false, italic=false, underline=false, code=false) {
+    if (code) return text; // No mapping in code blocks
+
+    let Aset = null, aSet = null, dSet = null;
+    if (bold) {
+      Aset = sansSerifBoldA; aSet = sansSerifBolda; dSet = sansSerifBoldDigits;
+      logMappingInfo("Bold is true. Aset: " + JSON.stringify(Aset));
+    } else if (italic) {
+      Aset = sansSerifItalicA; aSet = sansSerifItalica;
+      logMappingInfo("Italic is true. Aset: " + JSON.stringify(Aset));
+
+      // no italic digits
+    }
 
   let transformed = [...text].map(ch => {
     if (Aset && /[A-Z]/.test(ch)) {
