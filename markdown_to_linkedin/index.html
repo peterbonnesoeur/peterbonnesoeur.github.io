@@ -285,10 +285,8 @@ function convertMarkdownToLinkedIn(mdText) {
       } else if (tagName === 'li') {
         return "• " + content + "\n";
       } else if (tagName.match(/^h[1-6]$/)) {
-        // uppercase + bold
-        let upper = content.toUpperCase();
-        upper = mapChars(upper, true, false, false, false);
-        return upper + "\n\n";
+        content = mapChars(content, true, false, false, false);
+        return content + "\n\n";
       } else if (tagName === 'code') {
         // Inline code
         return "`" + node.textContent + "`";
