@@ -1,0 +1,67 @@
+---
+import { getCollection } from 'astro:content';
+import ProjectCard from './ProjectCard.astro';
+import TopoDivider from './TopoDivider.astro';
+
+const allProjects = await getCollection('projects');
+const sorted = allProjects.sort((a, b) => a.data.order - b.data.order);
+---
+
+<section id="projects" class="max-w-6xl mx-auto px-6 py-24">
+  <TopoDivider />
+
+  <div class="flex items-end justify-between mb-12">
+    <div>
+      <h2 class="text-3xl md:text-4xl font-heading text-slate dark:text-moonstone">Projects</h2>
+      <p class="text-graphite dark:text-dim mt-2">Things I've built, published, and experimented with.</p>
+    </div>
+  </div>
+
+  <!-- Filter buttons -->
+  <div class="flex flex-wrap gap-2 mb-8" id="project-filters">
+    <button class="filter-btn active px-3 py-1.5 text-sm rounded-full border border-stone dark:border-campfire-border bg-trail-orange text-white dark:bg-trail-orange-dark cursor-pointer transition-all" data-filter="all">All</button>
+    <button class="filter-btn px-3 py-1.5 text-sm rounded-full border border-stone dark:border-campfire-border bg-warm-white dark:bg-campfire text-graphite dark:text-dim cursor-pointer hover:border-trail-orange dark:hover:border-trail-orange-dark transition-all" data-filter="project">Projects</button>
+    <button class="filter-btn px-3 py-1.5 text-sm rounded-full border border-stone dark:border-campfire-border bg-warm-white dark:bg-campfire text-graphite dark:text-dim cursor-pointer hover:border-trail-orange dark:hover:border-trail-orange-dark transition-all" data-filter="publication">Publications</button>
+    <button class="filter-btn px-3 py-1.5 text-sm rounded-full border border-stone dark:border-campfire-border bg-warm-white dark:bg-campfire text-graphite dark:text-dim cursor-pointer hover:border-trail-orange dark:hover:border-trail-orange-dark transition-all" data-filter="certification">Certifications</button>
+  </div>
+
+  <!-- Bento grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="projects-grid">
+    {sorted.map(project => (
+      <div class="project-item" data-category={project.data.category}>
+        <ProjectCard
+          title={project.data.title}
+          description={project.data.description}
+          image={project.data.image}
+          url={project.data.url}
+          github={project.data.github}
+          tags={project.data.tags}
+          category={project.data.category}
+          featured={project.data.featured}
+        />
+      </div>
+    ))}
+  </div>
+</section>
+
+<script is:inline>
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.remove('bg-trail-orange', 'dark:bg-trail-orange-dark', 'text-white', 'active');
+        b.classList.add('bg-warm-white', 'dark:bg-campfire', 'text-graphite', 'dark:text-dim');
+      });
+      btn.classList.add('bg-trail-orange', 'dark:bg-trail-orange-dark', 'text-white', 'active');
+      btn.classList.remove('bg-warm-white', 'dark:bg-campfire', 'text-graphite', 'dark:text-dim');
+
+      const filter = btn.getAttribute('data-filter');
+      document.querySelectorAll('.project-item').forEach(item => {
+        if (filter === 'all' || item.getAttribute('data-category') === filter) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+  });
+</script>

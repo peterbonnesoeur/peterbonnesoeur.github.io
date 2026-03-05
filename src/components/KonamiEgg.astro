@@ -1,0 +1,62 @@
+---
+---
+<script is:inline>
+(function() {
+  const sequence = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let pos = 0;
+  let trailMode = false;
+
+  const renames = {
+    'About': 'Base Camp',
+    'Work': 'The Ascent',
+    'Projects': 'Summit Log',
+    'Blog': 'Trail Journal',
+    'Tools': 'Gear Shed',
+    'Contact': 'Finish Line',
+  };
+
+  function activateTrailMode() {
+    trailMode = true;
+    document.body.classList.add('trail-mode');
+
+    // Rename nav links
+    document.querySelectorAll('nav a').forEach(link => {
+      const text = link.textContent?.trim() || '';
+      if (renames[text]) link.textContent = renames[text];
+    });
+
+    // Shoe emoji confetti
+    for (let i = 0; i < 30; i++) {
+      const shoe = document.createElement('div');
+      shoe.textContent = '👟';
+      shoe.style.cssText = `position:fixed;top:-20px;left:${Math.random()*100}vw;font-size:${16+Math.random()*16}px;z-index:99999;pointer-events:none;animation:fall ${2+Math.random()*3}s linear forwards;`;
+      document.body.appendChild(shoe);
+      setTimeout(() => shoe.remove(), 5000);
+    }
+
+    // Add CSS animation
+    if (!document.getElementById('trail-mode-style')) {
+      const style = document.createElement('style');
+      style.id = 'trail-mode-style';
+      style.textContent = `
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); opacity: 0; } }
+        .trail-mode { background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 80 Q50 60 100 80 T200 80' stroke='%23E8764B' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3Cpath d='M0 120 Q50 100 100 120 T200 120' stroke='%23E8764B' stroke-width='0.5' fill='none' opacity='0.1'/%3E%3C/svg%3E"); }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.closest('input, textarea')) return;
+    if (e.key === sequence[pos]) {
+      pos++;
+      if (pos === sequence.length) {
+        pos = 0;
+        if (!trailMode) activateTrailMode();
+      }
+    } else {
+      pos = 0;
+    }
+  });
+})();
+</script>

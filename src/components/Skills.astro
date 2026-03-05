@@ -1,0 +1,183 @@
+---
+import TopoDivider from './TopoDivider.astro';
+
+interface Skill {
+  name: string;
+  highlight?: boolean;
+}
+
+interface SkillGroup {
+  title: string;
+  skills: Skill[];
+  color: 'trail-orange' | 'forest-green' | 'topo-blue';
+  lead?: boolean;
+}
+
+const skillGroups: SkillGroup[] = [
+  {
+    title: 'AI Architecture & Deployment',
+    lead: true,
+    skills: [
+      { name: 'Agentic Systems', highlight: true },
+      { name: 'LLM Deployment', highlight: true },
+      { name: 'RAG Pipelines', highlight: true },
+      { name: 'ML Platform Design', highlight: true },
+      { name: 'API & App Deployment', highlight: true },
+    ],
+    color: 'trail-orange',
+  },
+  {
+    title: 'AI Tooling',
+    skills: [
+      { name: 'Cursor / Claude Code', highlight: true },
+      { name: 'MCP', highlight: true },
+      { name: 'LangChain' },
+    ],
+    color: 'trail-orange',
+  },
+  {
+    title: 'Machine Learning',
+    skills: [
+      { name: 'PyTorch', highlight: true },
+      { name: 'Hugging Face', highlight: true },
+      { name: 'Scikit-Learn' },
+      { name: 'XGBoost' },
+      { name: 'SageMaker' },
+    ],
+    color: 'forest-green',
+  },
+  {
+    title: 'Programming Languages',
+    skills: [
+      { name: 'Python', highlight: true },
+      { name: 'C++' },
+      { name: 'SQL' },
+    ],
+    color: 'topo-blue',
+  },
+  {
+    title: 'Data & ETL',
+    skills: [
+      { name: 'Apache Spark', highlight: true },
+      { name: 'Pandas' },
+      { name: 'Apache Kafka' },
+      { name: 'Apache Beam' },
+    ],
+    color: 'topo-blue',
+  },
+  {
+    title: 'RAG & Vector DBs',
+    skills: [
+      { name: 'Faiss', highlight: true },
+      { name: 'Weaviate' },
+    ],
+    color: 'forest-green',
+  },
+  {
+    title: 'Cloud & Infra',
+    skills: [
+      { name: 'Azure', highlight: true },
+      { name: 'AWS', highlight: true },
+      { name: 'Snowflake' },
+      { name: 'Docker' },
+      { name: 'Terraform' },
+    ],
+    color: 'trail-orange',
+  },
+  {
+    title: 'Databases',
+    skills: [
+      { name: 'MySQL' },
+      { name: 'MongoDB' },
+      { name: 'Redshift' },
+    ],
+    color: 'topo-blue',
+  },
+  {
+    title: 'DevOps & Orchestration',
+    skills: [
+      { name: 'Airflow', highlight: true },
+      { name: 'Linux' },
+      { name: 'GitHub Actions' },
+      { name: 'DBT' },
+    ],
+    color: 'forest-green',
+  },
+];
+
+const languages = [
+  { lang: 'French', level: 'Native', flag: '🇫🇷' },
+  { lang: 'English', level: 'Fluent', flag: '🇬🇧' },
+  { lang: 'German', level: 'Intermediate', flag: '🇩🇪' },
+  { lang: 'Japanese', level: 'Beginner', flag: '🇯🇵' },
+];
+
+function pillStyle(color: string, highlight: boolean): string {
+  if (highlight) {
+    const solidMap: Record<string, string> = {
+      'trail-orange': 'bg-trail-orange text-white border-trail-orange dark:bg-trail-orange-dark dark:border-trail-orange-dark',
+      'forest-green': 'bg-forest-green text-white border-forest-green dark:bg-forest-green-dark dark:border-forest-green-dark',
+      'topo-blue': 'bg-topo-blue text-white border-topo-blue dark:bg-topo-blue-dark dark:border-topo-blue-dark',
+    };
+    return solidMap[color] || solidMap['trail-orange'];
+  }
+  const outlinedMap: Record<string, string> = {
+    'trail-orange': 'bg-trail-orange/10 text-trail-orange border-trail-orange/20 dark:bg-trail-orange-dark/10 dark:text-trail-orange-dark dark:border-trail-orange-dark/20',
+    'forest-green': 'bg-forest-green/10 text-forest-green border-forest-green/20 dark:bg-forest-green-dark/10 dark:text-forest-green-dark dark:border-forest-green-dark/20',
+    'topo-blue': 'bg-topo-blue/10 text-topo-blue border-topo-blue/20 dark:bg-topo-blue-dark/10 dark:text-topo-blue-dark dark:border-topo-blue-dark/20',
+  };
+  return outlinedMap[color] || outlinedMap['trail-orange'];
+}
+---
+
+<section id="skills" class="max-w-6xl mx-auto px-6 py-24">
+  <TopoDivider />
+
+  <h2 class="text-3xl md:text-4xl font-heading text-slate dark:text-moonstone mb-12">Skills</h2>
+
+  <!-- Lead category: AI Architecture -->
+  {skillGroups.filter(g => g.lead).map(group => (
+    <div class="mb-12 p-6 rounded-2xl border border-trail-orange/20 dark:border-trail-orange-dark/20 bg-trail-orange/[0.03] dark:bg-trail-orange-dark/[0.03]">
+      <h3 class="text-base font-heading uppercase tracking-wider text-trail-orange dark:text-trail-orange-dark mb-4">{group.title}</h3>
+      <div class="flex flex-wrap gap-2.5">
+        {group.skills.map(skill => (
+          <span class={`px-4 py-1.5 text-sm font-medium rounded-full border ${pillStyle(group.color, !!skill.highlight)}`}>
+            {skill.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  ))}
+
+  <div class="grid md:grid-cols-2 gap-12">
+    <div class="space-y-8">
+      {skillGroups.filter(g => !g.lead).map(group => (
+        <div>
+          <h3 class="text-sm font-medium uppercase tracking-wider text-graphite dark:text-dim mb-3">{group.title}</h3>
+          <div class="flex flex-wrap gap-2">
+            {group.skills.map(skill => (
+              <span class={`px-3 py-1 text-sm rounded-full border ${pillStyle(group.color, !!skill.highlight)}`}>
+                {skill.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <div>
+      <h3 class="text-sm font-medium uppercase tracking-wider text-graphite dark:text-dim mb-3">Spoken Languages</h3>
+      <div class="space-y-3">
+        {languages.map(lang => (
+          <div class="flex items-center gap-3 px-4 py-3 bg-warm-white dark:bg-campfire rounded-xl border border-stone dark:border-campfire-border">
+            <span class="text-2xl">{lang.flag}</span>
+            <div>
+              <p class="font-medium text-slate dark:text-moonstone">{lang.lang}</p>
+              <p class="text-xs text-graphite dark:text-dim">{lang.level}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

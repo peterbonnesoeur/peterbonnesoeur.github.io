@@ -1,0 +1,65 @@
+---
+import TopoDivider from './TopoDivider.astro';
+---
+
+<section id="contact" class="max-w-6xl mx-auto px-6 py-24">
+  <TopoDivider />
+
+  <h2 class="text-3xl md:text-4xl font-heading text-slate dark:text-moonstone mb-4">Let's Connect</h2>
+  <p class="text-graphite dark:text-dim mb-12 max-w-xl">
+    Whether you want to discuss ML, collaborate on a project, or just chat about trail running around Uetliberg — I'd love to hear from you.
+  </p>
+
+  <div class="grid md:grid-cols-3 gap-6">
+    <!-- Email card -->
+    <a
+      href="mailto:maxime.bonn@gmail.com?subject=Hello from your website"
+      class="group p-6 bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+    >
+      <div class="w-12 h-12 rounded-full bg-trail-orange/10 dark:bg-trail-orange-dark/10 flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-trail-orange dark:text-trail-orange-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+        </svg>
+      </div>
+      <h3 class="font-heading text-lg text-slate dark:text-moonstone group-hover:text-trail-orange dark:group-hover:text-trail-orange-dark transition-colors mb-1">Email</h3>
+      <p class="text-sm text-graphite dark:text-dim">maxime.bonn@gmail.com</p>
+    </a>
+
+    <!-- Cal.com booking card -->
+    <a
+      href="https://cal.com/max-bonn-9enstb"
+      target="_blank"
+      rel="noopener"
+      class="group p-6 bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+    >
+      <div class="w-12 h-12 rounded-full bg-forest-green/10 dark:bg-forest-green-dark/10 flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-forest-green dark:text-forest-green-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <h3 class="font-heading text-lg text-slate dark:text-moonstone group-hover:text-forest-green dark:group-hover:text-forest-green-dark transition-colors mb-1">Book a Call</h3>
+      <p class="text-sm text-graphite dark:text-dim">15 or 30 min — pick a time on Cal.com</p>
+    </a>
+
+    <!-- Buy Me a Coffee card -->
+    <a
+      href="https://buymeacoffee.com/maximebonnesoeur"
+      target="_blank"
+      rel="noopener"
+      class="group p-6 bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+    >
+      <div class="w-12 h-12 rounded-full bg-[#FFDD00]/20 flex items-center justify-center mb-4">
+        <span class="text-2xl">☕</span>
+      </div>
+      <h3 class="font-heading text-lg text-slate dark:text-moonstone group-hover:text-[#FFDD00] transition-colors mb-1">Buy Me a Coffee</h3>
+      <p class="text-sm text-graphite dark:text-dim">Fuel the caffeine addiction</p>
+    </a>
+  </div>
+
+  <p class="text-xs text-graphite/50 dark:text-dim/50 mt-8 text-center italic">
+    Or find me on the trails around Uetliberg.
+  </p>
+
+  <!-- Hidden summit marker #2 -->
+  <span class="summit-marker text-[6px] text-stone/30 dark:text-campfire-border/30 mt-2 inline-block cursor-pointer" data-summit="2" title="&#9650;">&#9650;</span>
+</section>

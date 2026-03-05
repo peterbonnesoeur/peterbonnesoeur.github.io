@@ -1,0 +1,71 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Coffee — Maxime Bonnesoeur">
+  <div class="max-w-2xl mx-auto px-6 py-24 text-center">
+    <pre class="text-trail-orange dark:text-trail-orange-dark text-xs md:text-sm font-mono mb-8 inline-block text-left">
+{`
+        ( (
+         ) )
+      ........
+      |      |]
+      \\      /
+       \`----'
+    ~~~~~~~~~~~
+`}
+    </pre>
+
+    <h1 class="text-4xl font-heading text-slate dark:text-moonstone mb-4">You found the coffee page!</h1>
+    <p class="text-graphite dark:text-dim mb-2">
+      Maxime has mass-consumed an estimated
+    </p>
+    <p class="text-6xl font-heading text-trail-orange dark:text-trail-orange-dark my-6" id="coffee-counter">0</p>
+    <p class="text-graphite dark:text-dim mb-8">coffees since this site launched.</p>
+
+    <a
+      href="https://buymeacoffee.com/maximebonnesoeur"
+      target="_blank"
+      rel="noopener"
+      class="inline-flex items-center gap-2 px-6 py-3 bg-[#FFDD00] text-[#0d0c22] font-medium rounded-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+    >
+      ☕ Buy Me a Coffee
+    </a>
+
+    <p class="text-xs text-graphite/40 dark:text-dim/40 mt-12">
+      Counter increments every 45 minutes during Swiss work hours. It's probably accurate.
+    </p>
+
+    <!-- Hidden summit marker #4 -->
+    <span class="summit-marker text-[6px] text-stone/20 dark:text-campfire-border/20 mt-4 inline-block cursor-pointer" data-summit="4" title="&#9650;">&#9650;</span>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+  (function() {
+    const launchDate = new Date('2026-03-05T08:00:00+01:00');
+    const now = new Date();
+    const msPerCoffee = 45 * 60 * 1000;
+
+    let totalCoffees = 0;
+    let current = new Date(launchDate);
+    while (current < now) {
+      const hour = current.getHours();
+      if (hour >= 8 && hour < 18 && current.getDay() !== 0 && current.getDay() !== 6) {
+        totalCoffees++;
+      }
+      current = new Date(current.getTime() + msPerCoffee);
+    }
+
+    const el = document.getElementById('coffee-counter');
+    if (el) {
+      let displayed = 0;
+      const step = Math.max(1, Math.floor(totalCoffees / 60));
+      const interval = setInterval(() => {
+        displayed = Math.min(displayed + step, totalCoffees);
+        el.textContent = displayed.toString();
+        if (displayed >= totalCoffees) clearInterval(interval);
+      }, 16);
+    }
+  })();
+</script>

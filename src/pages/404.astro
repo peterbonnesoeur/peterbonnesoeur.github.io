@@ -1,0 +1,152 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="404 — Lost on the Trail">
+  <div class="max-w-2xl mx-auto px-6 py-24 text-center">
+    <h1 class="text-6xl font-heading text-trail-orange dark:text-trail-orange-dark mb-4">404</h1>
+    <p class="text-xl text-slate dark:text-moonstone mb-2">You seem lost on the trail.</p>
+    <p class="text-graphite dark:text-dim mb-8">Maybe you need a toilet instead? Play the Toilet Radar while you figure out where to go.</p>
+
+    <canvas id="game-canvas" class="mx-auto border-2 border-stone dark:border-campfire-border rounded-xl bg-[#1a1a1a] mb-8 max-w-full" width="480" height="360"></canvas>
+
+    <div class="flex items-center justify-center gap-2 text-sm text-graphite dark:text-dim mb-4">
+      <span>Arrow keys to move</span> · <span>Find the 🚽 before time runs out!</span>
+    </div>
+    <p class="text-sm font-mono text-trail-orange dark:text-trail-orange-dark" id="game-score"></p>
+
+    <a href="/" class="inline-flex items-center gap-2 mt-8 text-sm text-trail-orange dark:text-trail-orange-dark hover:underline">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to safety
+    </a>
+  </div>
+</BaseLayout>
+
+<script is:inline>
+(function() {
+  const canvas = document.getElementById('game-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const TILE = 24;
+  const COLS = Math.floor(W / TILE);
+  const ROWS = Math.floor(H / TILE);
+
+  let player = { x: 1, y: 1 };
+  let toilet = { x: COLS - 2, y: ROWS - 2 };
+  let timeLeft = 30;
+  let gameOver = false;
+  let won = false;
+  let walls = [];
+
+  function generateMaze() {
+    walls = [];
+    for (let y = 0; y < ROWS; y++) {
+      walls[y] = [];
+      for (let x = 0; x < COLS; x++) {
+        if (x === 0 || x === COLS - 1 || y === 0 || y === ROWS - 1) {
+          walls[y][x] = true;
+        } else {
+          walls[y][x] = Math.random() < 0.25;
+        }
+      }
+    }
+    walls[player.y][player.x] = false;
+    walls[toilet.y][toilet.x] = false;
+    // Clear path near start and end
+    walls[1][2] = false; walls[2][1] = false;
+    walls[ROWS-2][COLS-3] = false; walls[ROWS-3][COLS-2] = false;
+  }
+
+  function draw() {
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, W, H);
+
+    for (let y = 0; y < ROWS; y++) {
+      for (let x = 0; x < COLS; x++) {
+        if (walls[y] && walls[y][x]) {
+          ctx.fillStyle = '#3D3D3D';
+          ctx.fillRect(x * TILE, y * TILE, TILE - 1, TILE - 1);
+        }
+      }
+    }
+
+    // Toilet
+    ctx.font = `${TILE - 4}px serif`;
+    ctx.fillText('🚽', toilet.x * TILE + 2, toilet.y * TILE + TILE - 4);
+
+    // Player
+    ctx.fillStyle = '#E8764B';
+    ctx.beginPath();
+    ctx.arc(player.x * TILE + TILE / 2, player.y * TILE + TILE / 2, TILE / 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Timer
+    ctx.fillStyle = timeLeft > 10 ? '#00ff41' : '#C24D3E';
+    ctx.font = '14px monospace';
+    ctx.fillText(`Time: ${timeLeft}s`, 8, H - 8);
+
+    if (gameOver) {
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = won ? '#00ff41' : '#C24D3E';
+      ctx.font = 'bold 24px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(won ? '🚽 Relief! You made it!' : '💀 Too late...', W / 2, H / 2);
+      ctx.font = '14px monospace';
+      ctx.fillText('Press R to retry', W / 2, H / 2 + 30);
+      ctx.textAlign = 'start';
+    }
+  }
+
+  function move(dx, dy) {
+    if (gameOver) return;
+    const nx = player.x + dx;
+    const ny = player.y + dy;
+    if (nx >= 0 && nx < COLS && ny >= 0 && ny < ROWS && !(walls[ny] && walls[ny][nx])) {
+      player.x = nx;
+      player.y = ny;
+      if (player.x === toilet.x && player.y === toilet.y) {
+        gameOver = true;
+        won = true;
+        const best = parseInt(localStorage.getItem('toiletHighScore') || '0');
+        if (timeLeft > best) localStorage.setItem('toiletHighScore', timeLeft.toString());
+        document.getElementById('game-score').textContent = `Best time remaining: ${Math.max(timeLeft, best)}s`;
+      }
+    }
+    draw();
+  }
+
+  function reset() {
+    player = { x: 1, y: 1 };
+    toilet = { x: COLS - 2, y: ROWS - 2 };
+    timeLeft = 30;
+    gameOver = false;
+    won = false;
+    generateMaze();
+    draw();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'r' || e.key === 'R') { reset(); return; }
+    const dirs = { ArrowUp: [0,-1], ArrowDown: [0,1], ArrowLeft: [-1,0], ArrowRight: [1,0] };
+    if (dirs[e.key]) {
+      e.preventDefault();
+      move(dirs[e.key][0], dirs[e.key][1]);
+    }
+  });
+
+  generateMaze();
+  draw();
+
+  const timer = setInterval(() => {
+    if (gameOver) { clearInterval(timer); return; }
+    timeLeft--;
+    if (timeLeft <= 0) { gameOver = true; won = false; clearInterval(timer); }
+    draw();
+  }, 1000);
+
+  const best = localStorage.getItem('toiletHighScore');
+  if (best) document.getElementById('game-score').textContent = `Best time remaining: ${best}s`;
+})();
+</script>

@@ -1,0 +1,101 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath = '/' } = Astro.props;
+
+const links = [
+  { href: '/#about', label: 'About' },
+  { href: '/#work', label: 'Work' },
+  { href: '/#projects', label: 'Projects' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/tools', label: 'Tools' },
+  { href: '/#contact', label: 'Contact' },
+];
+---
+
+<nav id="main-nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+  <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-2 group" aria-label="Home">
+      <img src="/favicon.svg" alt="MB" class="w-8 h-8 transition-transform duration-200 group-hover:scale-110" />
+      <span class="font-heading text-lg text-slate dark:text-moonstone hidden sm:inline">MB</span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-8">
+      {links.map(link => (
+        <a
+          href={link.href}
+          class="relative text-sm font-medium text-graphite hover:text-trail-orange dark:text-dim dark:hover:text-trail-orange-dark transition-colors duration-200 after:content-[''] after:absolute after:left-0 after:-bottom-1 after:w-0 after:h-0.5 after:bg-trail-orange after:transition-all after:duration-200 hover:after:w-full dark:after:bg-trail-orange-dark"
+        >
+          {link.label}
+        </a>
+      ))}
+      <ThemeToggle />
+    </div>
+
+    <button
+      id="mobile-menu-btn"
+      class="md:hidden flex flex-col gap-1.5 p-2 cursor-pointer"
+      aria-label="Toggle menu"
+    >
+      <span class="block w-6 h-0.5 bg-slate dark:bg-moonstone transition-all duration-300" id="bar1"></span>
+      <span class="block w-6 h-0.5 bg-slate dark:bg-moonstone transition-all duration-300" id="bar2"></span>
+      <span class="block w-6 h-0.5 bg-slate dark:bg-moonstone transition-all duration-300" id="bar3"></span>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div id="mobile-menu" class="md:hidden fixed inset-0 bg-parchment/95 dark:bg-night/95 backdrop-blur-md z-40 flex flex-col items-center justify-center gap-8 opacity-0 pointer-events-none transition-opacity duration-300">
+    {links.map(link => (
+      <a
+        href={link.href}
+        class="mobile-nav-link text-2xl font-heading text-slate dark:text-moonstone hover:text-trail-orange dark:hover:text-trail-orange-dark transition-colors"
+      >
+        {link.label}
+      </a>
+    ))}
+    <ThemeToggle />
+  </div>
+</nav>
+
+<script is:inline>
+  (function() {
+    const nav = document.getElementById('main-nav');
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    let menuOpen = false;
+
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        nav?.classList.add('bg-parchment/80', 'dark:bg-night/80', 'backdrop-blur-md', 'shadow-sm');
+      } else {
+        nav?.classList.remove('bg-parchment/80', 'dark:bg-night/80', 'backdrop-blur-md', 'shadow-sm');
+      }
+    });
+
+    menuBtn?.addEventListener('click', () => {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        mobileMenu?.classList.remove('opacity-0', 'pointer-events-none');
+        mobileMenu?.classList.add('opacity-100', 'pointer-events-auto');
+        document.body.style.overflow = 'hidden';
+      } else {
+        mobileMenu?.classList.add('opacity-0', 'pointer-events-none');
+        mobileMenu?.classList.remove('opacity-100', 'pointer-events-auto');
+        document.body.style.overflow = '';
+      }
+    });
+
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        menuOpen = false;
+        mobileMenu?.classList.add('opacity-0', 'pointer-events-none');
+        mobileMenu?.classList.remove('opacity-100', 'pointer-events-auto');
+        document.body.style.overflow = '';
+      });
+    });
+  })();
+</script>

@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import TopoDivider from '../../components/TopoDivider.astro';
+
+const posts = (await getCollection('blog'))
+  .filter(post => !post.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout title="Blog — Maxime Bonnesoeur" currentPath="/blog">
+  <div class="max-w-4xl mx-auto px-6 py-24">
+    <h1 class="text-4xl md:text-5xl font-heading text-slate dark:text-moonstone mb-4">Blog</h1>
+    <p class="text-graphite dark:text-dim mb-12">Thoughts on ML, engineering, trail running, and things in between.</p>
+
+    <TopoDivider />
+
+    {posts.length === 0 ? (
+      <p class="text-graphite dark:text-dim text-center py-12">No posts yet. Stay tuned!</p>
+    ) : (
+      <div class="grid gap-6">
+        {posts.map(post => (
+          <BlogCard
+            title={post.data.title}
+            description={post.data.description}
+            date={post.data.date}
+            tags={post.data.tags}
+            slug={post.id.replace(/\.mdx?$/, '')}
+          />
+        ))}
+      </div>
+    )}
+  </div>
+</BaseLayout>

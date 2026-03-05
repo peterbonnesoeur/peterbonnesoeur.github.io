@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typography */
+  --font-heading: 'DM Serif Display', serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Light mode colors */
+  --color-parchment: #FAF6F1;
+  --color-warm-white: #FEFDFB;
+  --color-stone: #E8E0D6;
+  --color-slate: #3D3D3D;
+  --color-graphite: #6B6B6B;
+  --color-trail-orange: #E8764B;
+  --color-trail-orange-hover: #D0653D;
+  --color-forest-green: #2D6B4F;
+  --color-topo-blue: #5B8FA8;
+  --color-ridge-red: #C24D3E;
+
+  /* Dark mode colors */
+  --color-night: #1A1A1A;
+  --color-campfire: #2A2420;
+  --color-campfire-border: #3D3D3D;
+  --color-moonstone: #E8E0D6;
+  --color-dim: #9A9A9A;
+  --color-trail-orange-dark: #F0845A;
+  --color-forest-green-dark: #3D8B6F;
+  --color-topo-blue-dark: #6BA0B8;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-body);
+    color: var(--color-slate);
+    background-color: var(--color-parchment);
+  }
+
+  html.dark {
+    color: var(--color-moonstone);
+    background-color: var(--color-night);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  code, pre, kbd {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background-color: var(--color-trail-orange);
+    color: white;
+  }
+
+  html.dark ::selection {
+    background-color: var(--color-trail-orange-dark);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Scroll reveal animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Summit marker global styles */
+.summit-marker {
+  cursor: pointer;
+  transition: color 0.3s;
+}
+.summit-marker:hover {
+  color: var(--color-trail-orange) !important;
+}
+.summit-marker.found {
+  color: var(--color-trail-orange) !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-stone);
+}
+html.dark ::-webkit-scrollbar-track {
+  background: var(--color-campfire-border);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-graphite);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-trail-orange);
+}

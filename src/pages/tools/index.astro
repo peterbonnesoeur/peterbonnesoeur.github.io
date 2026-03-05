@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ToolCard from '../../components/ToolCard.astro';
+import TopoDivider from '../../components/TopoDivider.astro';
+
+const tools = [
+  {
+    title: 'Markdown to LinkedIn',
+    description: 'Convert markdown text to LinkedIn-formatted posts with bold/italic Unicode magic. Real-time preview.',
+    href: '/tools/markdown-to-linkedin',
+    icon: '📝',
+  },
+  {
+    title: 'Notion to LinkedIn',
+    description: 'Transform Notion-exported text into LinkedIn-ready formatting with checkboxes and headers.',
+    href: '/tools/notion-to-linkedin',
+    icon: '📋',
+  },
+];
+---
+
+<BaseLayout title="Tools — Maxime Bonnesoeur" currentPath="/tools">
+  <div class="max-w-4xl mx-auto px-6 py-24">
+    <h1 class="text-4xl md:text-5xl font-heading text-slate dark:text-moonstone mb-4">Toolbox</h1>
+    <p class="text-graphite dark:text-dim mb-12">Small utilities I built to scratch my own itch. Free to use.</p>
+
+    <TopoDivider />
+
+    <div class="grid md:grid-cols-2 gap-6">
+      {tools.map(tool => (
+        <ToolCard {...tool} />
+      ))}
+    </div>
+
+    <!-- Hidden summit marker #3 -->
+    <span class="summit-marker text-[6px] text-stone/30 dark:text-campfire-border/30 mt-8 inline-block cursor-pointer" data-summit="3" title="&#9650;">&#9650;</span>
+  </div>
+</BaseLayout>

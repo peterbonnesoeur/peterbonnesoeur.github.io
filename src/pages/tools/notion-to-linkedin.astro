@@ -1,0 +1,111 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Notion to LinkedIn — Maxime Bonnesoeur" currentPath="/tools">
+  <div class="max-w-5xl mx-auto px-6 py-24">
+    <a href="/tools" class="inline-flex items-center gap-2 text-sm text-graphite dark:text-dim hover:text-trail-orange dark:hover:text-trail-orange-dark transition-colors mb-8">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to tools
+    </a>
+
+    <h1 class="text-4xl font-heading text-slate dark:text-moonstone mb-2">Notion to LinkedIn</h1>
+    <p class="text-graphite dark:text-dim mb-8">Paste Notion-exported text, get LinkedIn-ready formatting with checkboxes and uppercase headers.</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div>
+        <label for="notion-input" class="block text-sm font-medium text-slate dark:text-moonstone mb-2">Notion Input</label>
+        <textarea
+          id="notion-input"
+          placeholder="# Your heading&#10;&#10;Your **bold** and *italic* text...&#10;- [x] Completed task&#10;- [ ] Todo task"
+          class="w-full h-80 p-4 font-mono text-sm bg-warm-white dark:bg-campfire border border-stone dark:border-campfire-border rounded-xl text-slate dark:text-moonstone placeholder:text-graphite/40 dark:placeholder:text-dim/40 resize-none focus:outline-none focus:ring-2 focus:ring-trail-orange dark:focus:ring-trail-orange-dark"
+        ></textarea>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label for="notion-output" class="block text-sm font-medium text-slate dark:text-moonstone">LinkedIn Output</label>
+          <button
+            id="notion-copy-btn"
+            class="text-xs px-3 py-1 rounded-full bg-trail-orange/10 text-trail-orange dark:bg-trail-orange-dark/10 dark:text-trail-orange-dark hover:bg-trail-orange/20 dark:hover:bg-trail-orange-dark/20 transition-colors cursor-pointer"
+          >
+            Copy
+          </button>
+        </div>
+        <pre id="notion-output" class="w-full h-80 p-4 font-mono text-sm bg-warm-white dark:bg-campfire border border-stone dark:border-campfire-border rounded-xl text-slate dark:text-moonstone overflow-auto whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script is:inline>
+  const sansSerifBoldA = Array.from("\u{1D5D4}\u{1D5D5}\u{1D5D6}\u{1D5D7}\u{1D5D8}\u{1D5D9}\u{1D5DA}\u{1D5DB}\u{1D5DC}\u{1D5DD}\u{1D5DE}\u{1D5DF}\u{1D5E0}\u{1D5E1}\u{1D5E2}\u{1D5E3}\u{1D5E4}\u{1D5E5}\u{1D5E6}\u{1D5E7}\u{1D5E8}\u{1D5E9}\u{1D5EA}\u{1D5EB}\u{1D5EC}\u{1D5ED}");
+  const sansSerifBolda = Array.from("\u{1D5EE}\u{1D5EF}\u{1D5F0}\u{1D5F1}\u{1D5F2}\u{1D5F3}\u{1D5F4}\u{1D5F5}\u{1D5F6}\u{1D5F7}\u{1D5F8}\u{1D5F9}\u{1D5FA}\u{1D5FB}\u{1D5FC}\u{1D5FD}\u{1D5FE}\u{1D5FF}\u{1D600}\u{1D601}\u{1D602}\u{1D603}\u{1D604}\u{1D605}\u{1D606}\u{1D607}");
+  const sansSerifBoldDigits = Array.from("\u{1D7EC}\u{1D7ED}\u{1D7EE}\u{1D7EF}\u{1D7F0}\u{1D7F1}\u{1D7F2}\u{1D7F3}\u{1D7F4}\u{1D7F5}");
+  const sansSerifItalicA = Array.from("\u{1D608}\u{1D609}\u{1D60A}\u{1D60B}\u{1D60C}\u{1D60D}\u{1D60E}\u{1D60F}\u{1D610}\u{1D611}\u{1D612}\u{1D613}\u{1D614}\u{1D615}\u{1D616}\u{1D617}\u{1D618}\u{1D619}\u{1D61A}\u{1D61B}\u{1D61C}\u{1D61D}\u{1D61E}\u{1D61F}\u{1D620}\u{1D621}");
+  const sansSerifItalica = Array.from("\u{1D622}\u{1D623}\u{1D624}\u{1D625}\u{1D626}\u{1D627}\u{1D628}\u{1D629}\u{1D62A}\u{1D62B}\u{1D62C}\u{1D62D}\u{1D62E}\u{1D62F}\u{1D630}\u{1D631}\u{1D632}\u{1D633}\u{1D634}\u{1D635}\u{1D636}\u{1D637}\u{1D638}\u{1D639}\u{1D63A}\u{1D63B}");
+
+  function mapChars(text, bold, italic, code) {
+    if (code) return text;
+    let Aset = null, aSet = null, dSet = null;
+    if (bold) { Aset = sansSerifBoldA; aSet = sansSerifBolda; dSet = sansSerifBoldDigits; }
+    else if (italic) { Aset = sansSerifItalicA; aSet = sansSerifItalica; }
+    return [...text].map(ch => {
+      if (Aset && /[A-Z]/.test(ch)) return Aset[ch.charCodeAt(0) - 65];
+      if (aSet && /[a-z]/.test(ch)) return aSet[ch.charCodeAt(0) - 97];
+      if (dSet && /\d/.test(ch)) return dSet[ch.charCodeAt(0) - 48];
+      return ch;
+    }).join('');
+  }
+
+  function isBold(el) { return el && (el.matches('strong, b') || el.closest('strong, b')); }
+  function isItalic(el) { return el && (el.matches('em, i') || el.closest('em, i')); }
+  function replaceCheckboxes(content) {
+    return content.replace(/\[([ xX])\]\s?(.*)?/g, (_, p1, p2) => {
+      const state = p1.toLowerCase() === 'x' ? '\u2611' : '\u2610';
+      return state + (p2 ? ' ' + p2.trim() : '');
+    });
+  }
+
+  function convert(mdText) {
+    const html = marked.parse(mdText);
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    function process(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const p = node.parentElement;
+        return mapChars(node.textContent, isBold(p), isItalic(p), p && (p.matches('code, pre') || p.closest('code, pre')));
+      }
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        const tag = node.tagName.toLowerCase();
+        let content = Array.from(node.childNodes).map(process).join('');
+        if (tag === 'p') return replaceCheckboxes(content.trim()) + '\n\n';
+        if (tag === 'br') return '\n';
+        if (tag === 'hr') return '\n----\n\n';
+        if (['ul','ol'].includes(tag)) return replaceCheckboxes(content.trim()) + '\n\n';
+        if (tag === 'li') return '\u2022 ' + replaceCheckboxes(content) + '\n';
+        if (tag.match(/^h[1-6]$/)) return mapChars(replaceCheckboxes(content.toUpperCase()), true, false, false) + '\n\n';
+        if (tag === 'code') return '`' + node.textContent + '`';
+        if (tag === 'pre') return '\n```\n' + replaceCheckboxes(node.textContent) + '\n```\n';
+        if (tag === 'a') {
+          const href = node.getAttribute('href');
+          const t = mapChars(content, isBold(node), isItalic(node), false);
+          return href ? t + ' (' + href + ')' : t;
+        }
+        return mapChars(content, isBold(node), isItalic(node), false);
+      }
+      return '';
+    }
+    return process(doc.body).trim().replace(/\n{3,}/g, '\n\n');
+  }
+
+  const input = document.getElementById('notion-input');
+  const output = document.getElementById('notion-output');
+  const copyBtn = document.getElementById('notion-copy-btn');
+  input?.addEventListener('input', () => { output.textContent = convert(input.value); });
+  copyBtn?.addEventListener('click', () => {
+    navigator.clipboard.writeText(output.textContent || '');
+    copyBtn.textContent = 'Copied!';
+    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+  });
+</script>

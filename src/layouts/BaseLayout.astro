@@ -1,0 +1,106 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  currentPath?: string;
+}
+
+const {
+  title = "Maxime Bonnesoeur — AI Engineer & Systems Architect",
+  description = "AI Systems Architect and ML Engineer from Zürich. Designing end-to-end AI infrastructure, agentic systems, and LLM pipelines.",
+  currentPath = Astro.url.pathname,
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-site-verification" content="8C8gZ-CA-brvYxCJw3vDHvM5DDSMJ80V5VGK88Xn2tY" />
+    <meta name="description" content={description} />
+    <meta name="author" content="Maxime Bonnesoeur" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={Astro.url.href} />
+
+    <title>{title}</title>
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Inline dark mode script to prevent FOUC -->
+    <script is:inline>
+      (function() {
+        const stored = localStorage.getItem('theme');
+        if (stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+  </head>
+  <body class="min-h-screen bg-parchment dark:bg-night text-slate dark:text-moonstone antialiased">
+    <Nav currentPath={currentPath} />
+    <main class="pt-20">
+      <slot />
+    </main>
+    <Footer />
+
+    <!-- Scroll reveal observer -->
+    <script is:inline>
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('section').forEach(el => {
+        el.classList.add('reveal');
+        observer.observe(el);
+      });
+    </script>
+
+    <!-- Summit marker treasure hunt -->
+    <script is:inline>
+      (function() {
+        const found = JSON.parse(localStorage.getItem('summitsFound') || '[]');
+        document.querySelectorAll('.summit-marker').forEach(marker => {
+          const id = marker.getAttribute('data-summit');
+          if (found.includes(id)) marker.classList.add('found');
+          marker.addEventListener('click', () => {
+            if (!found.includes(id)) {
+              found.push(id);
+              localStorage.setItem('summitsFound', JSON.stringify(found));
+              marker.classList.add('found');
+              const count = found.length;
+              const msg = count < 5
+                ? `Summit ${count}/5 found! Keep exploring...`
+                : 'All 5 summits found! You are a true trail explorer!';
+              const toast = document.createElement('div');
+              toast.className = 'fixed bottom-6 right-6 px-4 py-3 bg-trail-orange text-white rounded-xl shadow-lg z-[9999] text-sm font-medium animate-bounce';
+              toast.textContent = msg;
+              document.body.appendChild(toast);
+              setTimeout(() => toast.remove(), 3000);
+            }
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>

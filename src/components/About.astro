@@ -1,0 +1,99 @@
+---
+import TopoDivider from './TopoDivider.astro';
+
+const birthdate = new Date('1997-08-11');
+const today = new Date();
+let age = today.getFullYear() - birthdate.getFullYear();
+const m = today.getMonth() - birthdate.getMonth();
+if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) age--;
+
+const facts = [
+  { icon: '📍', label: 'Zürich, Switzerland' },
+  { icon: '🎓', label: 'EPFL — Robotics' },
+  { icon: '🇫🇷', label: 'French' },
+  { icon: '🇨🇭', label: 'C Permit' },
+  { icon: '☕', label: 'Coffee addict' },
+  { icon: '🏔️', label: 'Trail runner' },
+];
+---
+
+<section id="about" class="max-w-6xl mx-auto px-6 py-24">
+  <TopoDivider />
+
+  <div class="grid md:grid-cols-[300px_1fr] gap-12 items-start">
+    <!-- Profile photo with click easter egg -->
+    <div class="flex justify-center md:justify-start">
+      <div class="relative group">
+        <img
+          id="profile-photo"
+          src="/assets/img/profile.png"
+          alt="Maxime Bonnesoeur"
+          class="w-64 h-64 object-cover rounded-2xl shadow-lg border-2 border-stone dark:border-campfire-border transition-transform duration-300 group-hover:scale-[1.02] cursor-pointer"
+          data-clicks="0"
+        />
+        <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-trail-orange rounded-full flex items-center justify-center text-white text-xs font-mono shadow-md">
+          {age}
+        </div>
+        <!-- Hidden summit marker #1 -->
+        <span class="summit-marker absolute -top-1 -left-1 text-[8px] text-stone/40 dark:text-campfire-border/40 rotate-12 cursor-pointer" data-summit="1" title="&#9650;">&#9650;</span>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+      <h2 class="text-3xl md:text-4xl font-heading text-slate dark:text-moonstone">About</h2>
+
+      <p class="text-lg leading-relaxed text-graphite dark:text-dim max-w-2xl">
+        AI Systems Architect and Machine Learning Engineer with a foundation in robotics from EPFL.
+        I design and deploy end-to-end AI infrastructure — from agentic systems and LLM pipelines
+        to production-grade ML platforms. When I'm not shipping AI, I'm training for trail races.
+      </p>
+
+      <div class="flex flex-wrap gap-3">
+        {facts.map(fact => (
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-warm-white dark:bg-campfire rounded-full text-sm text-slate dark:text-moonstone border border-stone dark:border-campfire-border">
+            <span>{fact.icon}</span>
+            {fact.label}
+          </span>
+        ))}
+      </div>
+
+      <div class="flex gap-4 pt-2">
+        <a href="mailto:maxime.bonn@gmail.com" class="inline-flex items-center gap-2 text-sm font-medium text-trail-orange hover:text-trail-orange-hover dark:text-trail-orange-dark transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          maxime.bonn@gmail.com
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (function() {
+    const photo = document.getElementById('profile-photo');
+    if (!photo) return;
+    const scales = [1.15, 1.35, 1.6, 1.9, 2.8];
+    const rotations = [3, -5, 7, -4, 0];
+    let clicks = 0;
+
+    photo.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    photo.style.zIndex = '20';
+
+    photo.addEventListener('click', () => {
+      clicks++;
+      if (clicks <= 5) {
+        photo.style.transform = `rotate(${rotations[clicks - 1]}deg) scale(${scales[clicks - 1]})`;
+      }
+      if (clicks === 5) {
+        const badge = document.createElement('div');
+        badge.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-trail-orange text-white px-6 py-3 rounded-full text-lg font-bold whitespace-nowrap shadow-2xl z-30 animate-bounce';
+        badge.textContent = '🏃 Caught me on the trails!';
+        photo.parentElement?.appendChild(badge);
+        setTimeout(() => {
+          badge.remove();
+          photo.style.transform = 'rotate(0deg) scale(1)';
+          clicks = 0;
+        }, 3000);
+      }
+    });
+  })();
+</script>

@@ -1,0 +1,131 @@
+---
+---
+<div id="terminal-overlay" class="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm opacity-0 pointer-events-none transition-all duration-300 flex items-end justify-center pb-8">
+  <div class="w-full max-w-2xl mx-4 bg-[#0a0a0a] border border-[#333] rounded-xl shadow-2xl overflow-hidden font-mono text-sm">
+    <div class="flex items-center gap-2 px-4 py-2 bg-[#1a1a1a] border-b border-[#333]">
+      <span class="w-3 h-3 rounded-full bg-[#ff5f57]"></span>
+      <span class="w-3 h-3 rounded-full bg-[#ffbd2e]"></span>
+      <span class="w-3 h-3 rounded-full bg-[#28c840]"></span>
+      <span class="text-[#666] text-xs ml-2">maxime@portfolio ~ </span>
+    </div>
+    <div id="terminal-body" class="p-4 h-80 overflow-y-auto text-[#00ff41]">
+      <div id="terminal-output"></div>
+      <div class="flex items-center gap-2">
+        <span class="text-[#00ff41]/60">$</span>
+        <input
+          id="terminal-input"
+          type="text"
+          class="flex-1 bg-transparent border-none outline-none text-[#00ff41] font-mono text-sm caret-[#00ff41]"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+(function() {
+  const overlay = document.getElementById('terminal-overlay');
+  const input = document.getElementById('terminal-input');
+  const output = document.getElementById('terminal-output');
+  const body = document.getElementById('terminal-body');
+  let open = false;
+
+  const commands = {
+    help: () => `Available commands:
+  ls          - list sections
+  cat about   - read about me
+  cat skills  - list skills
+  projects    - browse projects
+  coffee      - fuel the addiction
+  run toilet-radar  - find a toilet
+  sudo hire maxime  - you know what to do
+  clear       - clear terminal
+  exit        - close terminal`,
+    ls: () => `about/  work/  projects/  blog/  tools/  contact/  [hidden]/`,
+    'cat about': () => `Maxime Bonnesoeur
+Data Scientist & ML Engineer @ Stealth Finance Startup
+EPFL Master in Robotics | Zürich, Switzerland
+Trail runner in training | Coffee counter: ${localStorage.getItem('coffeeCount') || '∞'}`,
+    'cat skills': () => `Python  PyTorch  Spark  Hugging Face  AWS
+SQL  Docker  Terraform  Airflow  DBT
+French(native)  English(fluent)  German(meh)  Japanese(すみません)`,
+    projects: () => `[1] Toilet Radar - AI toilet finder for Switzerland
+[2] Markdown → LinkedIn converter
+[3] Pose Detection (HuggingFace)
+[4] Monocular 3D Vehicle Detection (thesis)
+[5] Face Mask Detection
+[6] Force Adaptation @ ICRA 2020`,
+    coffee: () => {
+      const count = parseInt(localStorage.getItem('coffeeCount') || '0') + 1;
+      localStorage.setItem('coffeeCount', count.toString());
+      return `☕ Coffee #${count} consumed. Total caffeine level: ${'█'.repeat(Math.min(count, 20))}${'░'.repeat(Math.max(20 - count, 0))}`;
+    },
+    'run toilet-radar': () => {
+      window.location.href = '/404-not-a-toilet';
+      return 'Launching Toilet Radar... 🚽';
+    },
+    'sudo hire maxime': () => {
+      window.open('mailto:maxime.bonn@gmail.com?subject=Let%27s%20work%20together!&body=Hi%20Maxime%2C%20I%20found%20your%20terminal%20easter%20egg%20and...');
+      return '📧 Opening email client... You have excellent taste.';
+    },
+    clear: () => { output.innerHTML = ''; return ''; },
+    exit: () => { toggleTerminal(); return ''; },
+  };
+
+  function addLine(text, isCmd) {
+    if (!text) return;
+    const div = document.createElement('div');
+    div.className = isCmd ? 'text-[#00ff41]/60 mb-1' : 'text-[#00ff41] mb-2 whitespace-pre-wrap';
+    div.textContent = isCmd ? `$ ${text}` : text;
+    output.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function handleCommand(cmd) {
+    const trimmed = cmd.trim().toLowerCase();
+    addLine(cmd, true);
+    if (trimmed === '') return;
+    const result = commands[trimmed];
+    if (result) {
+      const out = result();
+      if (out) addLine(out, false);
+    } else {
+      addLine(`command not found: ${trimmed}. Type 'help' for available commands.`, false);
+    }
+  }
+
+  function toggleTerminal() {
+    open = !open;
+    if (open) {
+      overlay.classList.remove('opacity-0', 'pointer-events-none');
+      overlay.classList.add('opacity-100', 'pointer-events-auto');
+      input.focus();
+      if (!output.innerHTML) addLine('Welcome to maxime@portfolio. Type "help" for commands.', false);
+    } else {
+      overlay.classList.add('opacity-0', 'pointer-events-none');
+      overlay.classList.remove('opacity-100', 'pointer-events-auto');
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '`' && !e.target.closest('input, textarea, [contenteditable]')) {
+      e.preventDefault();
+      toggleTerminal();
+    }
+    if (e.key === 'Escape' && open) toggleTerminal();
+  });
+
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      handleCommand(input.value);
+      input.value = '';
+    }
+  });
+
+  overlay?.addEventListener('click', (e) => {
+    if (e.target === overlay) toggleTerminal();
+  });
+})();
+</script>

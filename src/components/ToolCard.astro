@@ -1,0 +1,25 @@
+---
+interface Props {
+  title: string;
+  description: string;
+  href: string;
+  icon: string;
+}
+
+const { title, description, href, icon } = Astro.props;
+---
+
+<a
+  href={href}
+  class="group block p-6 bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+>
+  <span class="text-3xl mb-4 block">{icon}</span>
+  <h3 class="font-heading text-xl text-slate dark:text-moonstone group-hover:text-trail-orange dark:group-hover:text-trail-orange-dark transition-colors mb-2">
+    {title}
+  </h3>
+  <p class="text-sm text-graphite dark:text-dim leading-relaxed">{description}</p>
+  <span class="inline-flex items-center gap-1 text-sm text-trail-orange dark:text-trail-orange-dark mt-4 group-hover:gap-2 transition-all">
+    Try it
+    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+  </span>
+</a>
