@@ -1,4 +1,4 @@
-# maximebonnesoeur.ovh
+# maximebonnesoeur.ovh ^^
 
 Personal portfolio website built with Astro, Tailwind CSS v4, and MDX.
 
