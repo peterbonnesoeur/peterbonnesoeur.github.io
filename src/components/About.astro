@@ -8,20 +8,19 @@ const m = today.getMonth() - birthdate.getMonth();
 if (m < 0 || (m === 0 && today.getDate() < birthdate.getDate())) age--;
 
 const facts = [
-  { icon: '📍', label: 'Zürich, Switzerland' },
   { icon: '🎓', label: 'EPFL — Robotics' },
-  { icon: '🇫🇷', label: 'French' },
+  { icon: '⚡', label: '7+ years AI/ML' },
+  { icon: '📍', label: 'Zürich, CH' },
   { icon: '🇨🇭', label: 'C Permit' },
-  { icon: '☕', label: 'Coffee addict' },
-  { icon: '🏔️', label: 'Trail runner' },
 ];
+
+const skillLine = 'Python . PyTorch . Hugging Face . AWS . Azure . Spark . RAG . LLM Pipelines . Cursor 💜';
 ---
 
 <section id="about" class="max-w-6xl mx-auto px-6 py-24">
   <TopoDivider />
 
   <div class="grid md:grid-cols-[300px_1fr] gap-12 items-start">
-    <!-- Profile photo with click easter egg -->
     <div class="flex justify-center md:justify-start">
       <div class="relative group">
         <img
@@ -34,7 +33,6 @@ const facts = [
         <div class="absolute -bottom-2 -right-2 w-8 h-8 bg-trail-orange rounded-full flex items-center justify-center text-white text-xs font-mono shadow-md">
           {age}
         </div>
-        <!-- Hidden summit marker #1 -->
         <span class="summit-marker absolute -top-1 -left-1 text-[8px] text-stone/40 dark:text-campfire-border/40 rotate-12 cursor-pointer" data-summit="1" title="&#9650;">&#9650;</span>
       </div>
     </div>
@@ -43,9 +41,9 @@ const facts = [
       <h2 class="text-3xl md:text-4xl font-heading text-slate dark:text-moonstone">About</h2>
 
       <p class="text-lg leading-relaxed text-graphite dark:text-dim max-w-2xl">
-        AI Systems Architect and Machine Learning Engineer with a foundation in robotics from EPFL.
-        I design and deploy end-to-end AI infrastructure — from agentic systems and LLM pipelines
-        to production-grade ML platforms. When I'm not shipping AI, I'm training for trail races.
+        Machine Learning engineer who got hooked on NLP, computer vision, and finding the hidden gems in data.
+        I've spent the last 7+ years shipping AI — from leading a data science team to architecting agentic systems for fintech.
+        EPFL-trained, Zürich-based, and always looking for the next interesting problem to nerd out on.
       </p>
 
       <div class="flex flex-wrap gap-3">
@@ -56,6 +54,8 @@ const facts = [
           </span>
         ))}
       </div>
+
+      <p class="font-mono text-sm text-graphite/70 dark:text-dim/70 tracking-wide">{skillLine}</p>
 
       <div class="flex gap-4 pt-2">
         <a href="mailto:maxime.bonn@gmail.com" class="inline-flex items-center gap-2 text-sm font-medium text-trail-orange hover:text-trail-orange-hover dark:text-trail-orange-dark transition-colors">
@@ -86,7 +86,7 @@ const facts = [
       if (clicks === 5) {
         const badge = document.createElement('div');
         badge.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-trail-orange text-white px-6 py-3 rounded-full text-lg font-bold whitespace-nowrap shadow-2xl z-30 animate-bounce';
-        badge.textContent = '🏃 Caught me there!';
+        badge.textContent = '🏃 Caught me on the trails!';
         photo.parentElement?.appendChild(badge);
         setTimeout(() => {
           badge.remove();

@@ -11,6 +11,13 @@ try {
 } catch {
   // fallback to default Zürich elevation
 }
+
+const trailMarkers = [
+  { stat: 'Led a DS team', label: 'acquired by Similarweb' },
+  { stat: '4 ML products', label: 'running daily in prod' },
+  { stat: 'Published', label: 'ICRA 2020' },
+  { stat: '0 → 1', label: 'AI for fintech' },
+];
 ---
 
 <section id="hero" class="relative min-h-[90vh] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
@@ -21,19 +28,30 @@ try {
       Maxime Bonnesoeur
     </h1>
 
-    <p class="text-xl md:text-2xl text-graphite dark:text-dim">
-      <span id="typed-text"></span><span id="typed-cursor" class="text-trail-orange dark:text-trail-orange-dark animate-pulse">|</span>
+    <p class="text-xl md:text-2xl text-trail-orange dark:text-trail-orange-dark font-heading">
+      Just a nerd on the run.
     </p>
 
-    <p class="text-base text-graphite dark:text-dim max-w-lg mx-auto">
-      Architecting AI systems from Zürich, Switzerland
+    <p class="text-base md:text-lg text-graphite dark:text-dim max-w-xl mx-auto leading-relaxed">
+      I build AI systems with AI — from LLM pipelines to a <a href="https://toilet-radar.ch" target="_blank" rel="noopener" class="text-trail-orange hover:underline dark:text-trail-orange-dark">toilet finder for Switzerland</a>.
+      Currently building fintech infrastructure at <a href="https://synthexhq.com/" target="_blank" rel="noopener" class="text-trail-orange hover:underline dark:text-trail-orange-dark">Synthex</a> in Zürich.
     </p>
+
+    <!-- Trail markers -->
+    <div class="flex flex-wrap justify-center gap-4 pt-4">
+      {trailMarkers.map(marker => (
+        <div class="px-4 py-2 rounded-xl border border-stone dark:border-campfire-border bg-warm-white/60 dark:bg-campfire/60 backdrop-blur-sm">
+          <span class="block text-lg font-mono font-semibold text-trail-orange dark:text-trail-orange-dark">{marker.stat}</span>
+          <span class="block text-[11px] uppercase tracking-wider text-graphite dark:text-dim">{marker.label}</span>
+        </div>
+      ))}
+    </div>
 
     <a
-      href="#about"
+      href="#featured"
       class="inline-flex items-center gap-2 px-6 py-3 mt-4 text-sm font-medium text-warm-white bg-trail-orange hover:bg-trail-orange-hover rounded-full transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
     >
-      View my work
+      See what I've been up to
       <svg class="w-4 h-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
     </a>
   </div>
@@ -42,40 +60,3 @@ try {
     &#9472;&#9472;&#9472; current elevation: {elevation}m (Zürich) &#9472;&#9472;&#9472;
   </div>
 </section>
-
-<script is:inline>
-  (function() {
-    const roles = ['AI Systems Architect', 'Builder of Agentic Systems', 'Data Scientist', 'Ultra runner (in training)'];
-    let roleIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    const el = document.getElementById('typed-text');
-    if (!el) return;
-
-    function tick() {
-      const current = roles[roleIndex];
-      if (isDeleting) {
-        el.textContent = current.substring(0, charIndex - 1);
-        charIndex--;
-      } else {
-        el.textContent = current.substring(0, charIndex + 1);
-        charIndex++;
-      }
-
-      let delay = isDeleting ? 50 : 100;
-
-      if (!isDeleting && charIndex === current.length) {
-        delay = 2000;
-        isDeleting = true;
-      } else if (isDeleting && charIndex === 0) {
-        isDeleting = false;
-        roleIndex = (roleIndex + 1) % roles.length;
-        delay = 400;
-      }
-
-      setTimeout(tick, delay);
-    }
-
-    tick();
-  })();
-</script>

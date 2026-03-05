@@ -1,0 +1,87 @@
+---
+import TopoDivider from './TopoDivider.astro';
+
+interface WorkCard {
+  title: string;
+  role: string;
+  badge?: string;
+  badgeColor?: string;
+  description: string;
+  stats?: string[];
+  tags: string[];
+  accentColor: string;
+}
+
+const cards: WorkCard[] = [
+  {
+    title: 'Synthex',
+    role: 'AI Software Engineer — Founding Team',
+    badge: 'NOW',
+    badgeColor: 'bg-trail-orange text-white',
+    description: 'Building AI infrastructure for fintech — agentic systems that automate backoffice ops, extract financial data, and handle regulatory compliance. The kind of stuff where getting it wrong means real consequences.',
+    tags: ['Agentic Systems', 'LLM Deployment', 'IAC', 'Fintech'],
+    accentColor: 'border-l-trail-orange dark:border-l-trail-orange-dark',
+  },
+  {
+    title: '42Matters / Similarweb',
+    role: 'Data Scientist — Team Lead',
+    description: "Led the data science team and shipped 4 daily-operational products. The highlight: an IAB app classification system that doubled coverage and boosted accuracy by 25%. Also built graph-based app matching with Spark + CV, and integrated RAG search before it was cool.",
+    stats: ['Doubled coverage', '+25% accuracy', '4 products in production'],
+    tags: ['Spark', 'Computer Vision', 'NLP', 'RAG'],
+    accentColor: 'border-l-trail-orange dark:border-l-trail-orange-dark',
+  },
+  {
+    title: 'ICRA 2020',
+    role: 'Force Adaptation in Contact Tasks with Dynamical Systems',
+    badge: 'PUBLISHED',
+    badgeColor: 'bg-forest-green text-white dark:bg-forest-green-dark',
+    description: 'My first-ever published paper — designed a force adaptation system for collaborative robots. No extra sensors needed, 90% reduction in perturbations. Robotics meets reinforcement learning at ICRA in Paris.',
+    tags: ['Robotics', 'Reinforcement Learning', 'EPFL'],
+    accentColor: 'border-l-forest-green dark:border-l-forest-green-dark',
+  },
+];
+---
+
+<section id="featured" class="max-w-4xl mx-auto px-6 py-24">
+  <TopoDivider />
+
+  <h2 class="text-3xl md:text-4xl font-heading text-slate dark:text-moonstone mb-12">What I've been up to</h2>
+
+  <div class="space-y-8">
+    {cards.map(card => (
+      <div class:list={[
+        'relative border-l-4 rounded-xl p-6 md:p-8 bg-warm-white/50 dark:bg-campfire/50 backdrop-blur-sm border border-stone dark:border-campfire-border',
+        card.accentColor,
+      ]}>
+        <div class="flex flex-wrap items-center gap-3 mb-3">
+          <h3 class="text-xl font-heading text-slate dark:text-moonstone">{card.title}</h3>
+          {card.badge && (
+            <span class:list={['text-[10px] font-mono font-bold tracking-widest px-2 py-0.5 rounded-full uppercase', card.badgeColor]}>
+              {card.badge}
+            </span>
+          )}
+        </div>
+
+        <p class="text-sm font-medium text-graphite/80 dark:text-dim/80 italic mb-3">{card.role}</p>
+
+        <p class="text-base leading-relaxed text-graphite dark:text-dim mb-4">{card.description}</p>
+
+        {card.stats && (
+          <div class="flex flex-wrap gap-4 mb-4">
+            {card.stats.map(stat => (
+              <span class="font-mono text-sm font-semibold text-trail-orange dark:text-trail-orange-dark">{stat}</span>
+            ))}
+          </div>
+        )}
+
+        <div class="flex flex-wrap gap-2">
+          {card.tags.map(tag => (
+            <span class="px-2.5 py-1 rounded-full text-xs border border-stone dark:border-campfire-border text-graphite dark:text-dim bg-warm-white/60 dark:bg-campfire/60">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
