@@ -1,0 +1,130 @@
+---
+description: Project structure and conventions for Maxime Bonnesoeur's personal website
+globs: **/*
+alwaysApply: true
+---
+
+# Personal Website — Project Rules
+
+## Tech Stack
+
+- **Astro 5** (static output) with **Tailwind CSS v4** and **MDX**
+- Tailwind is loaded via `@tailwindcss/vite` plugin (not a PostCSS integration)
+- No UI component library — all components are hand-written `.astro` files
+- Vanilla JavaScript only (no React/Vue/Svelte islands) via `<script is:inline>` blocks
+- Deployed to **GitHub Pages** via `.github/workflows/deploy.yml`
+- Custom domain: `www.maximebonnesoeur.ovh` (CNAME in `public/`)
+
+## Directory Structure
+
+```
+src/
+├── components/       # Astro components (sections + reusable UI)
+├── content/          # Astro Content Collections
+│   ├── blog/         # MDX blog posts
+│   ├── projects/     # Markdown project/certification/publication cards
+│   └── config.ts     # Collection schemas (Zod)
+├── data/
+│   └── resume.json   # All career data (experience, education, academic, publications)
+├── layouts/
+│   └── BaseLayout.astro  # HTML shell, meta tags, nav, footer, dark mode, scroll reveal
+├── pages/
+│   ├── index.astro       # Homepage — composes section components
+│   ├── 404.astro         # Custom 404 with Toilet Radar mini-game
+│   ├── coffee.astro      # Hidden /coffee route (easter egg)
+│   ├── blog/             # Blog listing + [slug] dynamic route
+│   └── tools/            # Toolbox listing + converter pages
+└── styles/
+    └── global.css        # Tailwind directives, @theme tokens, base styles
+public/
+├── assets/img/           # Static images (profile photo, project screenshots)
+├── CNAME                 # GitHub Pages custom domain
+└── favicon.svg
+```
+
+## Key Conventions
+
+### Components
+
+Each major section is a standalone `.astro` component in `src/components/`:
+- `Hero.astro` — typed tagline, build-time elevation fetch from Open-Meteo API
+- `About.astro` — bio, profile photo with click easter egg, quick-fact tags
+- `Skills.astro` — grouped skill pills with highlighted (solid) vs regular (outlined) styles
+- `ElevationTimeline.astro` — SVG career elevation chart + detail cards, reads from `resume.json`
+- `Projects.astro` — bento grid from content collection, filterable by category
+- `Contact.astro` — email, Cal.com booking, Buy Me a Coffee links
+- `Terminal.astro` — hidden terminal overlay (backtick key)
+- `KonamiEgg.astro` — Konami code trail mode easter egg
+
+### Content Collections
+
+**Blog posts** (`src/content/blog/`):
+- Format: `.mdx` files
+- Frontmatter: `title`, `description`, `date`, `tags[]`, `draft` (boolean)
+- Slugs are derived from filename, stripping `.mdx` extension
+
+**Projects** (`src/content/projects/`):
+- Format: `.md` files
+- Frontmatter: `title`, `description`, `image?`, `url?`, `github?`, `tags[]`, `category` (project|education|publication|certification), `featured`, `order`
+- The `order` field controls display sort; lower = first
+
+### Resume Data
+
+`src/data/resume.json` is the single source of truth for career information:
+- `experience[]` — work entries with `title`, `company`, `url`, `location`, `period`, `sortYear`, `elevation`, `type` ("work"), `bullets[]`
+- `education[]` — degree entries with `title`, `institution`, `url`, `location`, `period`, `sortYear`, `elevation`, `type` ("education"), `description`
+- `academic[]` — internships/research with `title`, `institution`, `url`, `period`, `description`
+- `publications[]` — papers with `title`, `venue`, `url`, `description`
+- Bullets/descriptions support `**bold**` markdown syntax (rendered via `renderBold()` in ElevationTimeline)
+- `sortYear` determines chronological order on the elevation chart
+- `elevation` determines Y-position on the SVG chart (arbitrary scale, higher = more senior)
+
+### Design System
+
+Color tokens are defined in `src/styles/global.css` under `@theme`:
+- **Light**: `parchment` (bg), `warm-white` (cards), `stone` (borders), `slate` (text), `graphite` (secondary text)
+- **Dark**: `night` (bg), `campfire` (cards), `campfire-border`, `moonstone` (text), `dim` (secondary)
+- **Accents**: `trail-orange` (primary), `forest-green` (education/nature), `topo-blue` (data), `ridge-red` (danger)
+- Each accent has a `-dark` variant for dark mode
+- Fonts: `DM Serif Display` (headings), `Inter` (body), `JetBrains Mono` (code)
+
+Dark mode uses the `html.dark` class, toggled via `ThemeToggle.astro` and persisted in `localStorage`.
+
+### Easter Eggs
+
+1. **Profile photo clicks** — grows comically large after 5 clicks, resets
+2. **Terminal** — press backtick (`` ` ``) to open hidden terminal overlay
+3. **Konami code** — activates "Trail Mode" visual theme with confetti
+4. **Summit treasure hunt** — 5 hidden `▲` markers across pages; progress saved in localStorage
+5. **Coffee page** — hidden `/coffee` route with ASCII art and coffee counter
+6. **404 page** — Toilet Radar canvas mini-game
+
+### Styling Patterns
+
+- Use Tailwind utility classes; avoid custom CSS unless necessary
+- Skill pills: highlighted skills get solid colored backgrounds, regular ones get `bg-{color}/10` outlined style
+- Cards: `bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border`
+- Section spacing: `max-w-6xl mx-auto px-6 py-24`
+- Each section starts with `<TopoDivider />` for visual separation
+- Interactive elements use `transition-all duration-300 hover:shadow-lg hover:-translate-y-1`
+
+## Common Tasks
+
+### Add a new blog post
+Create `src/content/blog/my-post.mdx` with frontmatter (`title`, `description`, `date`, `tags`). It auto-appears on `/blog`.
+
+### Add a new project/certification
+Create `src/content/projects/my-project.md` with frontmatter. Set `category` to control which filter tab it appears under. Set `order` for positioning.
+
+### Update career data
+Edit `src/data/resume.json`. Add `sortYear` and `elevation` for timeline placement. Use `**bold**` in bullets for emphasis.
+
+### Modify the design tokens
+Edit the `@theme` block in `src/styles/global.css`. All Tailwind classes referencing those tokens update automatically.
+
+## Build & Deploy
+
+- `npm run dev` — local dev server
+- `npm run build` — static build to `dist/`
+- Push to `main` triggers GitHub Actions deploy to GitHub Pages
+- Build-time API call to Open-Meteo for Zürich elevation (Hero section)
