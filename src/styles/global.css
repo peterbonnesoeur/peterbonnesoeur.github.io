@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Class-based dark mode for theme toggle (Tailwind v4) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Typography */
   --font-heading: 'DM Serif Display', serif;
