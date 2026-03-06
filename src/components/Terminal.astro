@@ -60,7 +60,29 @@ French(native)  English(fluent)  German(meh)  Japanese(すみません)`,
     coffee: () => {
       const count = parseInt(localStorage.getItem('coffeeCount') || '0') + 1;
       localStorage.setItem('coffeeCount', count.toString());
-      return `☕ Coffee #${count} consumed. Total caffeine level: ${'█'.repeat(Math.min(count, 20))}${'░'.repeat(Math.max(20 - count, 0))}`;
+      const barLen = 20;
+      const cycle = Math.floor((count - 1) / barLen);
+      const pos = ((count - 1) % barLen) + 1;
+      const maxCycles = 4;
+
+      if (cycle >= maxCycles && pos >= barLen) {
+        localStorage.setItem('coffeeCount', '0');
+        const deathMsgs = [
+          '💀 You flatlined. Cause of death: mass caffeine intake.',
+          '☠️  Your heart just left the chat. GG.',
+          '🪦 RIP. Drowned in espresso. What a way to go.',
+          '💀 Game over. Even the coffee machine is concerned.',
+        ];
+        return deathMsgs[Math.floor(Math.random() * deathMsgs.length)] + '\n(Counter reset. Try to pace yourself this time.)';
+      }
+
+      const colors = ['#00ff41', '#7fff00', '#ffff00', '#ff8800', '#ff0000'];
+      const color = colors[Math.min(cycle, colors.length - 1)];
+      const filled = '█'.repeat(pos);
+      const empty = '░'.repeat(barLen - pos);
+      const warning = cycle >= 4 ? '⚠️  YOUR HEART IS BEGGING YOU TO STOP' : cycle >= 3 ? 'Dude, try drugs like a normal person💉' : cycle >= 1 ? ' 🫠 maybe slow down?' : ' 😰 getting warm...';
+
+      return `☕ Coffee #${count} consumed.\nCaffeine level: <span style="color:${color}">${filled}</span>${empty}${warning}`;
     },
     'run toilet-radar': () => {
       window.location.href = '/404-not-a-toilet';
@@ -78,7 +100,11 @@ French(native)  English(fluent)  German(meh)  Japanese(すみません)`,
     if (!text) return;
     const div = document.createElement('div');
     div.className = isCmd ? 'text-[#00ff41]/60 mb-1' : 'text-[#00ff41] mb-2 whitespace-pre-wrap';
-    div.textContent = isCmd ? `$ ${text}` : text;
+    if (isCmd) {
+      div.textContent = `$ ${text}`;
+    } else {
+      div.innerHTML = text;
+    }
     output.appendChild(div);
     body.scrollTop = body.scrollHeight;
   }
