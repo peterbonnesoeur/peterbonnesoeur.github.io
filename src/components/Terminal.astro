@@ -80,7 +80,7 @@ French(native)  English(fluent)  German(meh)  Japanese(すみません)`,
       const color = colors[Math.min(cycle, colors.length - 1)];
       const filled = '█'.repeat(pos);
       const empty = '░'.repeat(barLen - pos);
-      const warning = cycle >= 4 ? '⚠️  YOUR HEART IS BEGGING YOU TO STOP' : cycle >= 3 ? 'Dude, try drugs like a normal person💉' : cycle >= 1 ? ' 🫠 maybe slow down?' : ' 😰 getting warm...';
+      const warning = cycle >= 4 ? '⚠️  YOUR HEART IS BEGGING YOU TO STOP' : cycle >= 3 ? 'Dude, try drugs like a normal person💉' : cycle >= 2 ? ' 🫠 maybe slow down?' : cycle >= 1 ? ' 😰 getting warm...' : '';
 
       return `☕ Coffee #${count} consumed.\nCaffeine level: <span style="color:${color}">${filled}</span>${empty}${warning}`;
     },
