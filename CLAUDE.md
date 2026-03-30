@@ -1,41 +1,68 @@
-# CLAUDE.md — AI Agent Instructions
+# CLAUDE.md
 
-This is Maxime Bonnesoeur's personal portfolio website built with Astro 5, Tailwind CSS v4, and MDX.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Quick Reference
+Maxime Bonnesoeur's personal portfolio — built with Astro 5, Tailwind CSS v4, and MDX. Deployed to GitHub Pages at `www.maximebonnesoeur.ovh`.
 
-| What | Where |
-|---|---|
-| Astro config | `astro.config.mjs` |
-| Global styles & color tokens | `src/styles/global.css` |
-| Base HTML layout | `src/layouts/BaseLayout.astro` |
-| Homepage sections | `src/components/*.astro` (composed in `src/pages/index.astro`) |
-| Career data | `src/data/resume.json` |
-| Blog posts | `src/content/blog/*.mdx` |
-| Project/cert cards | `src/content/projects/*.md` |
-| Content schemas | `src/content/config.ts` |
-| Static assets | `public/assets/img/` |
-| CI/CD | `.github/workflows/deploy.yml` |
+## Commands
+
+```bash
+npm run dev      # Start dev server
+npm run build    # Build static site to dist/
+npm run preview  # Preview built site locally
+```
+
+Push to `main` triggers automatic GitHub Actions deploy.
 
 ## Architecture
 
-- **Static-only output** — no SSR, no server endpoints
+- **Static-only output** — no SSR, no server endpoints (`output: 'static'` in `astro.config.mjs`)
 - **No JS frameworks** — all interactivity is vanilla JS in `<script is:inline>` blocks
-- **Tailwind v4** loaded via Vite plugin (`@tailwindcss/vite`), NOT PostCSS
-- **Content Collections** for blog (MDX) and projects (Markdown) with Zod schemas
-- **Dark mode** via `html.dark` class, toggled by `ThemeToggle.astro`, persisted in localStorage
+- **Tailwind v4** loaded via `@tailwindcss/vite` Vite plugin, NOT PostCSS
+- **Content Collections** for blog (MDX) and projects (Markdown), schemas defined with Zod in `src/content/config.ts`
+- **Dark mode** via `html.dark` class, toggled by `ThemeToggle.astro`, persisted in `localStorage`
+- `Hero.astro` makes a build-time fetch to the Open-Meteo API for Zürich's current elevation
 
-## Content Editing
+## Key Files
 
-### Resume / career data
-Edit `src/data/resume.json`. Each entry has:
-- `sortYear` — controls chronological position on elevation chart
-- `elevation` — Y-axis position on SVG chart (arbitrary, higher = more senior)
+| What | Where |
+|---|---|
+| Global styles & color tokens | `src/styles/global.css` |
+| Base HTML layout (meta, nav, footer, scroll reveal) | `src/layouts/BaseLayout.astro` |
+| Homepage composition | `src/pages/index.astro` |
+| Career data (single source of truth) | `src/data/resume.json` |
+| Content schemas | `src/content/config.ts` |
+
+## Components
+
+Each homepage section is a standalone `.astro` component in `src/components/`:
+- `ElevationTimeline.astro` — SVG career chart; reads `resume.json`, renders bold via local `renderBold()` helper
+- `Projects.astro` — bento grid from content collection, filterable by `category`
+- `Terminal.astro` — hidden terminal overlay (backtick key)
+- `KonamiEgg.astro` — Konami code trail mode easter egg
+
+## Resume / Career Data
+
+`src/data/resume.json` has four top-level arrays: `experience[]`, `education[]`, `academic[]`, `publications[]`.
+
+Each `experience`/`education` entry needs:
+- `sortYear` — chronological position on the elevation chart
+- `elevation` — Y-axis position on SVG (arbitrary scale, higher = more senior)
 - `type` — `"work"` or `"education"` for color coding
-- `bullets[]` / `description` — supports `**bold**` markdown syntax
+- `bullets[]` / `description` — support `**bold**` markdown syntax (rendered by `renderBold()`)
 
-### Adding projects or certifications
-Create a `.md` file in `src/content/projects/` with frontmatter:
+## Content Collections
+
+**Blog** (`src/content/blog/*.mdx`):
+```yaml
+title: "Post Title"
+description: "Summary"
+date: 2026-03-05
+tags: ["AI", "Tutorial"]
+draft: false
+```
+
+**Projects** (`src/content/projects/*.md`):
 ```yaml
 title: "Project Name"
 description: "Short description"
@@ -48,41 +75,26 @@ featured: false
 order: 7             # lower = appears first
 ```
 
-### Adding blog posts
-Create a `.mdx` file in `src/content/blog/` with frontmatter:
-```yaml
-title: "Post Title"
-description: "Summary"
-date: 2026-03-05
-tags: ["AI", "Tutorial"]
-draft: false
-```
+## Design System
 
-## Design Tokens
+All tokens in `src/styles/global.css` `@theme` block:
+- **Backgrounds**: `parchment` (light) / `night` (dark)
+- **Cards**: `warm-white` (light) / `campfire` (dark), borders `stone` / `campfire-border`
+- **Text**: `slate` / `moonstone` (primary), `graphite` / `dim` (secondary)
+- **Accents**: `trail-orange` (primary), `forest-green` (education), `topo-blue` (data), `ridge-red` (danger) — each has a `-dark` variant
+- **Fonts**: `DM Serif Display` (headings via `font-heading`), `Inter` (body), `JetBrains Mono` (mono)
 
-All colors live in `src/styles/global.css` `@theme` block. Key tokens:
-- Backgrounds: `parchment` (light), `night` (dark)
-- Cards: `warm-white` / `campfire`
-- Text: `slate` / `moonstone`
-- Primary accent: `trail-orange` / `trail-orange-dark`
-- Secondary accents: `forest-green`, `topo-blue`, `ridge-red`
+Conventions:
+- Every section starts with `<TopoDivider />` for visual separation
+- Section wrapper: `max-w-6xl mx-auto px-6 py-24`
+- Card pattern: `bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border`
+- Interactive cards: add `hover:shadow-lg hover:-translate-y-1 transition-all duration-300`
 
-## Easter Eggs
+## Easter Eggs — Do Not Remove
 
-The site has 6 hidden features. Don't remove them:
 1. Profile photo click escalation (About section)
 2. Terminal overlay (backtick key)
 3. Konami code trail mode
-4. Summit treasure hunt (5 hidden markers)
+4. Summit treasure hunt — 5 hidden `▲` markers with `data-summit` attributes, progress in `localStorage`
 5. `/coffee` hidden page
-6. 404 Toilet Radar mini-game
-
-## Commands
-
-```bash
-npm run dev      # Start dev server
-npm run build    # Build static site to dist/
-npm run preview  # Preview built site locally
-```
-
-Deploy happens automatically via GitHub Actions on push to `main`.
+6. 404 Toilet Radar canvas mini-game
