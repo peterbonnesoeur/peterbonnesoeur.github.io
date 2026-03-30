@@ -1,7 +1,7 @@
 {
   "experience": [
     {
-      "title": "AI Software Engineer — Founding Team",
+      "title": "Lead AI Engineer, Founding Team",
       "company": "Synthex",
       "url": "https://synthexhq.com/",
       "location": "Zürich, Switzerland",
@@ -42,7 +42,7 @@
       "type": "work",
       "bullets": [
         "**Led and developed the data science team**, empowering and mentoring members. Spearheaded project formulation and execution, ensuring successful ML model deployment",
-        "**App Categorization:** Advanced IAB classification with **text embedding** and **cosine similarity** — **doubled coverage** and **increased accuracy by 25%**",
+        "**App Categorization:** Advanced IAB classification with **text embedding** and **cosine similarity**, **doubling coverage** and **increasing accuracy by 25%**",
         "**Revenue Estimation:** Sophisticated models to estimate app earnings for **better-targeted marketing strategies** and informed **business decisions**",
         "**App Matching:** Graph-based system using **Spark** and **computer vision** for efficient cross-marketplace app matching",
         "**Demographics Estimation:** Implemented demographic estimation through **computer vision** and **Spark** for **targeted marketing campaigns**",
@@ -62,13 +62,13 @@
         "Created a **NLP model to identify the preferred incentives** of the Swiss political class toward predetermined domains",
         "Creation of a **web application for automatic detection of false watches** based on vibration signature analysis",
         "Development of orchestration pipelines via **Airflow** to setup VMs (Terraform), Slack channels, GitHub projects, and hour tracking",
-        "**Designed and implemented the sales tracking architecture** using **AWS, Snowflake, and DBT** — **lowered processing costs by 5x**"
+        "**Designed and implemented the sales tracking architecture** using **AWS, Snowflake, and DBT**, **lowering processing costs by 5x**"
       ]
     }
   ],
   "education": [
     {
-      "title": "Master of Robotics — Deep Learning",
+      "title": "Master of Robotics, Deep Learning",
       "institution": "EPFL",
       "url": "https://www.epfl.ch/en/",
       "location": "Lausanne, Switzerland",
@@ -99,7 +99,7 @@
       "description": "Developed an attention-based mechanism for **human and vehicle detection and 3D localization from a monocular RGB image** (no lidar or stereo). Originally developed for Transformers in NLP, here applied to visual tasks."
     },
     {
-      "title": "Intern Digital Engineering — Industry 4.0",
+      "title": "Intern Digital Engineering, Industry 4.0",
       "institution": "Philip Morris International",
       "url": "https://www.pmi.com/",
       "period": "2020",
@@ -110,7 +110,7 @@
       "institution": "Rovenso",
       "url": "https://www.rovenso.com/",
       "period": "2019",
-      "description": "Implemented a ML model to **detect humans with both thermal (FLIR) and RGB cameras**. Optimised the network to work on an NVIDIA Jetson — backbone still used in the company's main product."
+      "description": "Implemented a ML model to **detect humans with both thermal (FLIR) and RGB cameras**. Optimised the network to work on an NVIDIA Jetson; the backbone is still used in the company's main product."
     }
   ],
   "publications": [
@@ -118,7 +118,7 @@
       "title": "Force Adaptation in Contact Tasks with Dynamical Systems",
       "venue": "ICRA 2020, Paris, France",
       "url": "https://www.researchgate.net/publication/339627382_Force_Adaptation_in_Contact_Tasks_with_Dynamical_Systems",
-      "description": "Designed an **online force adaptation system** for impedance-controlled robots. Enables collaborative work without additional sensors — **reduction of biggest perturbations by 90%** while learning from the task."
+      "description": "Designed an **online force adaptation system** for impedance-controlled robots. Enables collaborative work without additional sensors, achieving a **90% reduction in perturbations** while learning from the task."
     }
   ]
 }

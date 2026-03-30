@@ -1,5 +1,5 @@
 ---
-title: "AWS Certified Machine Learning — Specialty"
+title: "AWS Certified Machine Learning: Specialty"
 description: "AWS certification validating expertise in building, training, tuning, and deploying ML models on AWS."
 url: "https://credly.com/badges/966e8dc5-6c27-4729-86fc-b7163334cf59/linked_in_profile"
 tags: ["AWS", "Machine Learning", "Certification"]

@@ -1,6 +1,6 @@
 ---
 title: "NLP Specialization"
-description: "Coursera specialization covering the full NLP pipeline — from text classification to attention models."
+description: "Coursera specialization covering the full NLP pipeline, from text classification to attention models."
 image: "/assets/img/projects/Coursera_NLP.png"
 url: "https://coursera.org/account/accomplishments/specialization/certificate/YYHM35Y9DU8N"
 tags: ["NLP", "Deep Learning", "Certification"]

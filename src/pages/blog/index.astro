@@ -9,7 +9,7 @@ const posts = (await getCollection('blog'))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
 
-<BaseLayout title="Blog — Maxime Bonnesoeur" currentPath="/blog">
+<BaseLayout title="Blog | Maxime Bonnesoeur" currentPath="/blog">
   <div class="max-w-4xl mx-auto px-6 py-24">
     <h1 class="text-4xl md:text-5xl font-heading text-slate dark:text-moonstone mb-4">Blog</h1>
     <p class="text-graphite dark:text-dim mb-12">Thoughts on ML, engineering, trail running, and things in between.</p>
