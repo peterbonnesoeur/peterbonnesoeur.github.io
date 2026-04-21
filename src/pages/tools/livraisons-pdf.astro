@@ -1,0 +1,632 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Livraisons PDF → Excel | Maxime Bonnesoeur" currentPath="/tools">
+  <div class="max-w-6xl mx-auto px-6 py-24">
+    <a href="/tools" class="inline-flex items-center gap-2 text-sm text-graphite dark:text-dim hover:text-trail-orange dark:hover:text-trail-orange-dark transition-colors mb-8">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to tools
+    </a>
+
+    <h1 class="text-4xl font-heading text-slate dark:text-moonstone mb-2">Livraisons PDF → Excel</h1>
+    <p class="text-graphite dark:text-dim mb-8">
+      Déposez un PDF « Livraisons en cours ». Les lignes sont extraites, vous pouvez les corriger, puis télécharger le fichier Excel mis en forme.
+    </p>
+
+    <!-- Drop zone -->
+    <div
+      id="drop-zone"
+      class="relative border-2 border-dashed border-stone dark:border-campfire-border rounded-2xl p-12 text-center bg-warm-white dark:bg-campfire transition-colors hover:border-trail-orange dark:hover:border-trail-orange-dark cursor-pointer"
+    >
+      <input id="file-input" type="file" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      <svg class="w-12 h-12 mx-auto mb-4 text-graphite dark:text-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path d="M7 18a4.6 4.4 0 01-.71-8.95 5.5 5.5 0 0111.3-2.5 6 6 0 01-.59 11.95H7zM12 12v9m-4-5l4-4 4 4"/>
+      </svg>
+      <p class="text-slate dark:text-moonstone font-medium mb-1">Glissez-déposez le PDF ici</p>
+      <p class="text-sm text-graphite dark:text-dim">ou cliquez pour choisir un fichier</p>
+    </div>
+
+    <!-- Status -->
+    <div id="status" class="mt-4 text-sm text-graphite dark:text-dim"></div>
+
+    <!-- Results panel -->
+    <div id="results" class="hidden mt-10">
+      <!-- Document meta -->
+      <div class="bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border p-6 mb-6">
+        <h2 class="font-heading text-xl text-slate dark:text-moonstone mb-4">Document</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <label class="block">
+            <span class="text-graphite dark:text-dim">Code client</span>
+            <input id="meta-client-code" type="text" class="mt-1 w-full px-3 py-2 bg-parchment dark:bg-night border border-stone dark:border-campfire-border rounded-lg text-slate dark:text-moonstone focus:outline-none focus:ring-2 focus:ring-trail-orange" />
+          </label>
+          <label class="block">
+            <span class="text-graphite dark:text-dim">Client</span>
+            <input id="meta-client-name" type="text" class="mt-1 w-full px-3 py-2 bg-parchment dark:bg-night border border-stone dark:border-campfire-border rounded-lg text-slate dark:text-moonstone focus:outline-none focus:ring-2 focus:ring-trail-orange" />
+          </label>
+          <label class="block">
+            <span class="text-graphite dark:text-dim">Date</span>
+            <input id="meta-date" type="text" placeholder="JJ/MM/AAAA" class="mt-1 w-full px-3 py-2 bg-parchment dark:bg-night border border-stone dark:border-campfire-border rounded-lg text-slate dark:text-moonstone focus:outline-none focus:ring-2 focus:ring-trail-orange" />
+          </label>
+        </div>
+      </div>
+
+      <!-- Rows preview -->
+      <div class="bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-heading text-xl text-slate dark:text-moonstone">Lignes extraites (<span id="row-count">0</span>)</h2>
+          <button id="add-row" class="text-xs px-3 py-1 rounded-full bg-trail-orange/10 text-trail-orange dark:bg-trail-orange-dark/10 dark:text-trail-orange-dark hover:bg-trail-orange/20 dark:hover:bg-trail-orange-dark/20 transition-colors cursor-pointer">+ Ajouter une ligne</button>
+        </div>
+        <p class="text-xs text-graphite dark:text-dim mb-3">Cliquez sur une cellule pour corriger. Les modifications seront reflétées dans le fichier Excel.</p>
+        <div class="overflow-auto max-h-[600px] rounded-lg border border-stone dark:border-campfire-border">
+          <table id="rows-table" class="w-full text-xs">
+            <thead class="sticky top-0 z-10 bg-[#305496] text-white">
+              <tr>
+                <th class="px-2 py-2 text-left font-semibold">Récépissé</th>
+                <th class="px-2 py-2 text-left font-semibold">Date</th>
+                <th class="px-2 py-2 text-left font-semibold">Départ</th>
+                <th class="px-2 py-2 text-left font-semibold">Transporteur</th>
+                <th class="px-2 py-2 text-left font-semibold">N° cmde</th>
+                <th class="px-2 py-2 text-left font-semibold">N° dossier</th>
+                <th class="px-2 py-2 text-left font-semibold">N° colisage</th>
+                <th class="px-2 py-2 text-left font-semibold">N° BL</th>
+                <th class="px-2 py-2 text-left font-semibold">Article</th>
+                <th class="px-2 py-2 text-left font-semibold">Marque</th>
+                <th class="px-2 py-2 text-left font-semibold">Référence</th>
+                <th class="px-2 py-2 text-left font-semibold">Libellé</th>
+                <th class="px-2 py-2 text-left font-semibold">Qté</th>
+                <th class="px-2 py-2 text-left font-semibold">Réf. cde / commentaire</th>
+                <th class="px-2 py-2 font-semibold w-8"></th>
+              </tr>
+            </thead>
+            <tbody id="rows-body" class="text-slate dark:text-moonstone"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 items-center">
+        <button
+          id="download-btn"
+          class="px-6 py-3 bg-trail-orange text-white rounded-xl font-medium hover:bg-trail-orange-dark transition-colors cursor-pointer shadow-sm hover:shadow-md"
+        >
+          Télécharger le fichier Excel
+        </button>
+        <button
+          id="reset-btn"
+          class="px-4 py-3 text-sm text-graphite dark:text-dim hover:text-slate dark:hover:text-moonstone transition-colors cursor-pointer"
+        >
+          Recommencer
+        </button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script is:inline>
+  // --- PDF.js worker config ---
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  // --- State ---
+  const COLS = [
+    'recepisse', 'date', 'depart', 'transporteur',
+    'cmde', 'dossier', 'colisage', 'bl',
+    'article', 'marque', 'reference',
+    'libelle', 'qte', 'commentaire',
+  ];
+  let state = { clientCode: '', clientName: '', date: '', rows: [] };
+
+  // --- DOM refs ---
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const statusEl = document.getElementById('status');
+  const results = document.getElementById('results');
+  const rowsBody = document.getElementById('rows-body');
+  const rowCountEl = document.getElementById('row-count');
+  const clientCodeInput = document.getElementById('meta-client-code');
+  const clientNameInput = document.getElementById('meta-client-name');
+  const dateInput = document.getElementById('meta-date');
+  const downloadBtn = document.getElementById('download-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const addRowBtn = document.getElementById('add-row');
+
+  // --- Drop-zone wiring ---
+  ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.add('border-trail-orange', 'dark:border-trail-orange-dark');
+  }));
+  ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.remove('border-trail-orange', 'dark:border-trail-orange-dark');
+  }));
+  dropZone.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) handleFile(f);
+  });
+
+  async function handleFile(file) {
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setStatus('Le fichier doit être un PDF.', 'error');
+      return;
+    }
+    setStatus('Analyse du PDF…');
+    try {
+      const parsed = await parsePdf(file);
+      if (!parsed.rows.length) {
+        setStatus('Aucune ligne détectée. Le format de ce PDF n\'est peut-être pas reconnu.', 'error');
+        return;
+      }
+      state = parsed;
+      renderMeta();
+      renderRows();
+      results.classList.remove('hidden');
+      setStatus(`${parsed.rows.length} ligne(s) extraite(s).`, 'ok');
+    } catch (err) {
+      console.error(err);
+      setStatus('Erreur: ' + (err.message || 'Impossible de lire le PDF.'), 'error');
+    }
+  }
+
+  function setStatus(msg, level) {
+    statusEl.textContent = msg || '';
+    statusEl.className = 'mt-4 text-sm ' + (
+      level === 'error' ? 'text-ridge-red dark:text-ridge-red-dark' :
+      level === 'ok' ? 'text-forest-green dark:text-forest-green-dark' :
+      'text-graphite dark:text-dim'
+    );
+  }
+
+  // ------------------------------------------------------------------
+  //  PDF PARSING
+  // ------------------------------------------------------------------
+  async function parsePdf(file) {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+
+    // Collect all text items with normalized coordinates (top-down Y).
+    const pages = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const viewport = page.getViewport({ scale: 1 });
+      const content = await page.getTextContent();
+      const items = [];
+      for (const it of content.items) {
+        const s = it.str.replace(/\s+$/, '');
+        if (!s) continue;
+        const x = it.transform[4];
+        const y = viewport.height - it.transform[5]; // top-down
+        items.push({ str: s, x, y, w: it.width || 0 });
+      }
+      pages.push({ items, width: viewport.width });
+    }
+
+    // --- Title (page 1, topmost items) ---
+    let titleText = '';
+    if (pages[0]) {
+      const sorted = [...pages[0].items].sort((a, b) => a.y - b.y || a.x - b.x);
+      const topY = sorted[0]?.y ?? 0;
+      titleText = sorted.filter(i => i.y - topY < 6).map(i => i.str).join(' ').trim();
+    }
+    const titleMatch = titleText.match(/Livraisons\s+en\s+cours\s+pour\s+(\S+)\s+(.+?)\s+au\s+(\S+)/i);
+    const clientCode = titleMatch?.[1] ?? '';
+    const clientName = titleMatch?.[2] ?? '';
+    const date = titleMatch?.[3] ?? '';
+
+    // --- Find column X-positions from header row (repeated on every page) ---
+    // Anchor on unique words (the "N°" prefix repeats 4x so we don't use it).
+    // Order matters: left-to-right matches the table layout.
+    const COL_ANCHORS = ['cmde', 'dossier', 'colisage', 'bl', 'article', 'libell', 'qt', 'réf'];
+    let colX = null;
+    let debugHeader = '';
+    for (const pg of pages) {
+      const lines = groupByLine(pg.items);
+      for (const line of lines) {
+        const joined = line.map(i => i.str).join(' ');
+        const jl = joined.toLowerCase();
+        // Heuristic: the header line must contain several anchors at once.
+        const hits = COL_ANCHORS.filter(a => jl.includes(a)).length;
+        if (hits >= 5) {
+          debugHeader = joined;
+          colX = findColumnXs(line, COL_ANCHORS);
+          if (colX) break;
+        }
+      }
+      if (colX) break;
+    }
+    if (!colX) {
+      const hint = debugHeader ? ` Ligne détectée: « ${debugHeader.slice(0, 120)} »` : '';
+      throw new Error('En-tête de colonnes introuvable dans le PDF.' + hint);
+    }
+    // eslint-disable-next-line no-console
+    console.log('[livraisons-pdf] colX:', colX);
+
+    // --- Walk through all lines, assembling rows ---
+    const rows = [];
+    let ctx = { recepisse: '', date, depart: '', transporteur: '' };
+    let current = null;
+
+    for (const pg of pages) {
+      const lines = groupByLine(pg.items);
+      for (const line of lines) {
+        const joined = line.map(i => i.str).join(' ').trim();
+
+        // Skip title line on page 1
+        if (/^Livraisons\s+en\s+cours/i.test(joined)) continue;
+        // Skip repeated column header (and its wrapped "commentaire" line)
+        const jl = joined.toLowerCase();
+        const hdrHits = ['cmde', 'dossier', 'colisage', 'article', 'libell', 'qt'].filter(a => jl.includes(a)).length;
+        if (hdrHits >= 4) continue;
+        if (/^commentaire$/i.test(joined.trim())) continue;
+
+        // Récépissé section header
+        const rec = joined.match(/Récépissé\s+N°\s+(\S+)\s+du\s+(\S+)\s+au\s+départ\s+de\s+(.+?)\s+et\s+livré\s+par\s+(.+)$/i);
+        if (rec) {
+          if (current) { rows.push(current); current = null; }
+          ctx = {
+            recepisse: rec[1].trim(),
+            date: rec[2].trim(),
+            depart: rec[3].trim(),
+            transporteur: rec[4].trim(),
+          };
+          continue;
+        }
+
+        // Assign each item in the line to a column bucket
+        const bucket = Array(colX.length).fill('');
+        for (const it of line) {
+          const c = columnFor(it.x, colX);
+          if (c < 0) continue;
+          bucket[c] = bucket[c] ? bucket[c] + ' ' + it.str : it.str;
+        }
+
+        // New data row detection: something in the "N° cmde" column that looks like a number
+        const looksLikeNewRow = /^\d{5,}/.test(bucket[0]);
+        if (looksLikeNewRow) {
+          if (current) rows.push(current);
+          current = {
+            ...ctx,
+            cmde: bucket[0].trim(),
+            dossier: bucket[1].trim(),
+            colisage: bucket[2].trim(),
+            bl: bucket[3].trim(),
+            article: bucket[4].trim(),
+            libelle: bucket[5].trim(),
+            qte: bucket[6].trim(),
+            commentaire: bucket[7].trim(),
+          };
+        } else if (current) {
+          // Continuation — append non-empty buckets with a space
+          if (bucket[4]) current.article = joinParts(current.article, bucket[4]);
+          if (bucket[5]) current.libelle = joinParts(current.libelle, bucket[5]);
+          if (bucket[6]) current.qte = joinParts(current.qte, bucket[6]);
+          if (bucket[7]) current.commentaire = joinParts(current.commentaire, bucket[7]);
+          // cmde/dossier/colisage/bl rarely wrap, but handle just in case
+          if (bucket[0] && !current.cmde) current.cmde = bucket[0].trim();
+          if (bucket[1] && !current.dossier) current.dossier = bucket[1].trim();
+          if (bucket[2] && !current.colisage) current.colisage = bucket[2].trim();
+          if (bucket[3] && !current.bl) current.bl = bucket[3].trim();
+        }
+      }
+    }
+    if (current) rows.push(current);
+
+    // Post-process each row: split Article into Marque/Référence, clean qté
+    for (const r of rows) {
+      const [marque, reference] = splitArticle(r.article);
+      r.marque = marque;
+      r.reference = reference;
+      r.qte = parseQte(r.qte);
+      // Collapse repeated whitespace in text cells
+      r.libelle = squishSpaces(r.libelle);
+      r.commentaire = squishSpaces(r.commentaire);
+      r.article = squishSpaces(r.article);
+    }
+
+    return { clientCode, clientName, date, rows };
+  }
+
+  // Group text items into visual lines (cluster by y within tolerance).
+  function groupByLine(items) {
+    const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x);
+    const lines = [];
+    const TOL = 3; // pt — items within this Y distance belong to same line
+    for (const it of sorted) {
+      const last = lines[lines.length - 1];
+      if (last && Math.abs(it.y - last[0].y) <= TOL) {
+        last.push(it);
+      } else {
+        lines.push([it]);
+      }
+    }
+    // Sort each line left-to-right
+    for (const line of lines) line.sort((a, b) => a.x - b.x);
+    return lines;
+  }
+
+  // Given a header line and anchor list (unique column keywords, lower-case),
+  // return X positions for each column start, in order.
+  // If a "N°" item sits just to the left of a matched anchor, use its X instead
+  // (that gives a slightly wider left boundary for N°-prefixed columns).
+  function findColumnXs(headerLine, anchors) {
+    const xs = [];
+    let searchFrom = 0;
+    for (const anchor of anchors) {
+      let foundIdx = -1;
+      for (let i = searchFrom; i < headerLine.length; i++) {
+        const s = headerLine[i].str.toLowerCase();
+        if (s.startsWith(anchor) || s.includes(anchor)) {
+          foundIdx = i;
+          break;
+        }
+      }
+      if (foundIdx === -1) return null;
+
+      let x = headerLine[foundIdx].x;
+      // Check if a "N°" item sits directly to the left (small X gap).
+      if (foundIdx > 0) {
+        const prev = headerLine[foundIdx - 1];
+        if (/^N°/i.test(prev.str.trim()) && x - prev.x < 40) {
+          x = prev.x;
+        }
+      }
+      xs.push(x);
+      searchFrom = foundIdx + 1;
+    }
+    for (let i = 1; i < xs.length; i++) if (xs[i] <= xs[i - 1]) return null;
+    return xs;
+  }
+
+  // Nearest-column assignment. PDF headers are often centered while data is
+  // left-aligned, so boundary-based assignment misplaces items. Snapping each
+  // item to the closest reference X is alignment-agnostic.
+  function columnFor(x, colX) {
+    let best = 0;
+    let bestDist = Math.abs(x - colX[0]);
+    for (let i = 1; i < colX.length; i++) {
+      const d = Math.abs(x - colX[i]);
+      if (d < bestDist) { best = i; bestDist = d; }
+    }
+    return best;
+  }
+
+  function joinParts(a, b) {
+    if (!a) return b;
+    if (!b) return a;
+    return a + ' ' + b;
+  }
+
+  function splitArticle(article) {
+    if (!article) return ['', ''];
+    const idx = article.indexOf('-');
+    if (idx === -1) return [article.trim(), ''];
+    return [article.slice(0, idx).trim(), article.slice(idx + 1).trim()];
+  }
+
+  function parseQte(s) {
+    if (!s) return '';
+    const m = String(s).match(/\d+/);
+    return m ? parseInt(m[0], 10) : s;
+  }
+
+  function squishSpaces(s) {
+    return String(s || '').replace(/\s+/g, ' ').trim();
+  }
+
+  // ------------------------------------------------------------------
+  //  UI RENDERING
+  // ------------------------------------------------------------------
+  function renderMeta() {
+    clientCodeInput.value = state.clientCode;
+    clientNameInput.value = state.clientName;
+    dateInput.value = state.date;
+  }
+  [clientCodeInput, clientNameInput, dateInput].forEach(el => {
+    el.addEventListener('input', () => {
+      state.clientCode = clientCodeInput.value;
+      state.clientName = clientNameInput.value;
+      state.date = dateInput.value;
+    });
+  });
+
+  function renderRows() {
+    rowsBody.innerHTML = '';
+    state.rows.forEach((row, i) => rowsBody.appendChild(buildRowTr(row, i)));
+    rowCountEl.textContent = state.rows.length;
+  }
+
+  function buildRowTr(row, index) {
+    const tr = document.createElement('tr');
+    tr.className = (index % 2 === 0 ? 'bg-parchment dark:bg-night' : 'bg-warm-white dark:bg-campfire') + ' border-t border-stone dark:border-campfire-border';
+    for (const col of COLS) {
+      const td = document.createElement('td');
+      td.className = 'px-2 py-1 align-top';
+      td.contentEditable = 'true';
+      td.spellcheck = false;
+      td.textContent = row[col] ?? '';
+      td.dataset.col = col;
+      td.addEventListener('input', () => {
+        state.rows[index][col] = td.textContent;
+      });
+      tr.appendChild(td);
+    }
+    const rm = document.createElement('td');
+    rm.className = 'px-2 py-1 align-top text-center';
+    const btn = document.createElement('button');
+    btn.textContent = '×';
+    btn.className = 'text-graphite dark:text-dim hover:text-ridge-red text-lg leading-none cursor-pointer';
+    btn.title = 'Supprimer la ligne';
+    btn.addEventListener('click', () => {
+      state.rows.splice(index, 1);
+      renderRows();
+    });
+    rm.appendChild(btn);
+    tr.appendChild(rm);
+    return tr;
+  }
+
+  addRowBtn.addEventListener('click', () => {
+    const last = state.rows[state.rows.length - 1] || {};
+    state.rows.push({
+      recepisse: last.recepisse || '', date: last.date || state.date,
+      depart: last.depart || '', transporteur: last.transporteur || '',
+      cmde: '', dossier: '', colisage: '', bl: '',
+      article: '', marque: '', reference: '',
+      libelle: '', qte: '', commentaire: '',
+    });
+    renderRows();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    state = { clientCode: '', clientName: '', date: '', rows: [] };
+    results.classList.add('hidden');
+    fileInput.value = '';
+    setStatus('');
+  });
+
+  // ------------------------------------------------------------------
+  //  EXCEL GENERATION (matches the reference Python output)
+  // ------------------------------------------------------------------
+  downloadBtn.addEventListener('click', async () => {
+    try {
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = 'Génération…';
+      if (typeof ExcelJS === 'undefined') {
+        throw new Error('La bibliothèque ExcelJS n\'est pas chargée (vérifiez la connexion).');
+      }
+      const blob = await buildExcel(state);
+      const filename = makeFilename(state);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Defer revoke — revoking synchronously can cancel the download in some browsers.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setStatus(`Fichier téléchargé: ${filename}`, 'ok');
+    } catch (err) {
+      console.error('[livraisons-pdf] download error:', err);
+      setStatus('Erreur lors de la génération: ' + (err.message || err), 'error');
+    } finally {
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = 'Télécharger le fichier Excel';
+    }
+  });
+
+  function slugify(s) {
+    return String(s || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function dateToCompact(d) {
+    // DD/MM/YYYY -> YYYYMMDD. Fallback to stripping non-digits.
+    const m = String(d || '').match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (m) return m[3] + m[2] + m[1];
+    return String(d || '').replace(/\D/g, '');
+  }
+
+  function makeFilename({ date, clientName }) {
+    const d = dateToCompact(date) || 'export';
+    const slug = slugify(clientName) || 'livraisons';
+    return `livraisons-${d}-${slug}.xlsx`;
+  }
+
+  async function buildExcel({ clientCode, clientName, date, rows }) {
+    const wb = new ExcelJS.Workbook();
+    // Excel sheet names can't contain: \ / ? * [ ] : — strip them.
+    const safeDate = String(date || '').replace(/[\\\/?*\[\]:]/g, '-');
+    const sheetTitle = (`Livraisons ${safeDate}`).trim().slice(0, 31);
+    const ws = wb.addWorksheet(sheetTitle || 'Livraisons');
+
+    const thin = { style: 'thin', color: { argb: 'FFBFBFBF' } };
+    const border = { top: thin, bottom: thin, left: thin, right: thin };
+
+    // --- Title row ---
+    const titleText = `Livraisons en cours pour ${clientCode} ${clientName} au ${date}`.replace(/\s+/g, ' ').trim();
+    ws.mergeCells('A1:N1');
+    const titleCell = ws.getCell('A1');
+    titleCell.value = titleText;
+    titleCell.font = { name: 'Arial', bold: true, size: 14 };
+    titleCell.alignment = { horizontal: 'center', vertical: 'center' };
+
+    // --- Header row (row 3) ---
+    const headers = [
+      'Récépissé', 'Date', 'Départ', 'Transporteur',
+      'N° cmde', 'N° dossier', 'N° colisage', 'N° BL',
+      'Article', 'Marque', 'Référence',
+      'Libellé', 'Qté', 'Réf. cde / commentaire',
+    ];
+    headers.forEach((h, i) => {
+      const c = ws.getRow(3).getCell(i + 1);
+      c.value = h;
+      c.font = { name: 'Arial', bold: true, color: { argb: 'FFFFFFFF' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF305496' } };
+      c.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
+      c.border = border;
+    });
+    ws.getRow(3).height = 32;
+
+    // --- Data rows ---
+    rows.forEach((r, idx) => {
+      const rowIdx = 4 + idx;
+      const rr = ws.getRow(rowIdx);
+      const values = [
+        r.recepisse, r.date, r.depart, r.transporteur,
+        r.cmde, r.dossier, r.colisage, r.bl,
+        r.article, r.marque, r.reference,
+        r.libelle, typeof r.qte === 'number' ? r.qte : (r.qte === '' ? null : Number(r.qte) || r.qte),
+        r.commentaire,
+      ];
+      values.forEach((v, i) => {
+        const c = rr.getCell(i + 1);
+        c.value = v;
+        c.font = { name: 'Arial', size: 10 };
+        c.alignment = { vertical: 'top', wrapText: true };
+        c.border = border;
+        if (rowIdx % 2 === 0) {
+          c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } };
+        }
+      });
+    });
+
+    // --- Total row ---
+    const totalRow = 4 + rows.length;
+    const labelCell = ws.getRow(totalRow).getCell(12); // column L
+    labelCell.value = 'TOTAL Qté';
+    labelCell.font = { name: 'Arial', bold: true };
+    labelCell.alignment = { horizontal: 'right' };
+
+    // Compute total in JS — avoids Excel formula compatibility issues.
+    const totalQte = rows.reduce((acc, r) => {
+      const n = typeof r.qte === 'number' ? r.qte : parseInt(String(r.qte).replace(/[^\d]/g, ''), 10);
+      return acc + (Number.isFinite(n) ? n : 0);
+    }, 0);
+    const sumCell = ws.getRow(totalRow).getCell(13); // column M
+    sumCell.value = totalQte;
+    sumCell.font = { name: 'Arial', bold: true };
+    sumCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } };
+    sumCell.border = border;
+
+    // --- Column widths ---
+    const widths = [12, 12, 15, 14, 12, 12, 12, 12, 28, 14, 20, 50, 6, 38];
+    widths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+
+    // --- Freeze header + auto-filter ---
+    ws.views = [{ state: 'frozen', ySplit: 3 }];
+    if (rows.length > 0) {
+      ws.autoFilter = `A3:N${3 + rows.length}`;
+    }
+
+    const buffer = await wb.xlsx.writeBuffer();
+    return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+</script>
