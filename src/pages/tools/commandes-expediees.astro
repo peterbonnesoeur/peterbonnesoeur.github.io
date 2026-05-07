@@ -173,12 +173,14 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const buf = new Uint8Array(await file.arrayBuffer());
     const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
 
-    // Collect text items per page with normalized top-down Y. We also
-    // compute a GLOBAL y (page offset + local y) so that cross-page row
-    // continuations (e.g. a libellé that wraps from the bottom of page N
-    // onto the top of page N+1) can be matched to the correct row anchor.
+    // Collect text items per page. Each item gets a local y and a global gy.
+    // gy stitches pages together using the actual content range (not the
+    // full viewport height) so that a row's libellé wrapping from the
+    // bottom of page N onto the top of page N+1 sits next to its anchor in
+    // the global Y axis — otherwise the page-margin whitespace creates an
+    // artificial gap that pulls continuation lines toward the wrong row.
     const pages = [];
-    let yOffset = 0;
+    let pageEndGy = 0;
     for (let p = 1; p <= pdf.numPages; p++) {
       const page = await pdf.getPage(p);
       const viewport = page.getViewport({ scale: 1 });
@@ -189,10 +191,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
         if (!s) continue;
         const x = it.transform[4];
         const localY = viewport.height - it.transform[5];
-        items.push({ str: s, x, y: localY, gy: yOffset + localY });
+        items.push({ str: s, x, y: localY });
+      }
+      if (items.length) {
+        const minY = Math.min(...items.map(i => i.y));
+        const maxY = Math.max(...items.map(i => i.y));
+        const yOffset = pageEndGy + 20 - minY;
+        for (const it of items) it.gy = yOffset + it.y;
+        pageEndGy = yOffset + maxY;
       }
       pages.push({ items, width: viewport.width, height: viewport.height });
-      yOffset += viewport.height;
     }
 
     const allLines = [];
