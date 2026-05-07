@@ -3,7 +3,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import ToolCard from '../../components/ToolCard.astro';
 import TopoDivider from '../../components/TopoDivider.astro';
 
-const tools = [
+const generalTools = [
   {
     title: 'Markdown to LinkedIn',
     description: 'Convert markdown text to LinkedIn-formatted posts with bold/italic Unicode magic. Real-time preview.',
@@ -16,11 +16,20 @@ const tools = [
     href: '/tools/notion-to-linkedin',
     icon: '📋',
   },
+];
+
+const familyTools = [
   {
     title: 'Livraisons PDF → Excel',
     description: 'Convertit un PDF « Livraisons en cours » en fichier Excel mis en forme. Aperçu et correction avant téléchargement.',
     href: '/tools/livraisons-pdf',
     icon: '📦',
+  },
+  {
+    title: 'Commandes expédiées → Excel',
+    description: 'Convertit un PDF « Commandes expédiées » (en cours / reliquats / portefeuille) en fichier Excel propre. Aperçu modifiable.',
+    href: '/tools/commandes-expediees',
+    icon: '🚚',
   },
 ];
 ---
@@ -32,11 +41,29 @@ const tools = [
 
     <TopoDivider />
 
-    <div class="grid md:grid-cols-2 gap-6">
-      {tools.map(tool => (
-        <ToolCard {...tool} />
-      ))}
+    <section class="mt-12">
+      <h2 class="font-heading text-2xl text-slate dark:text-moonstone mb-2">General tools</h2>
+      <p class="text-sm text-graphite dark:text-dim mb-6">Public utilities — useful for anyone writing or posting online.</p>
+      <div class="grid md:grid-cols-2 gap-6">
+        {generalTools.map(tool => (
+          <ToolCard {...tool} />
+        ))}
+      </div>
+    </section>
+
+    <div class="mt-16">
+      <TopoDivider />
     </div>
+
+    <section class="mt-12">
+      <h2 class="font-heading text-2xl text-slate dark:text-moonstone mb-2">Outils famille</h2>
+      <p class="text-sm text-graphite dark:text-dim mb-6">Petits utilitaires bricolés pour des besoins très spécifiques (PDF métier de ma mère). Probablement pas utiles pour vous, mais en libre accès.</p>
+      <div class="grid md:grid-cols-2 gap-6">
+        {familyTools.map(tool => (
+          <ToolCard {...tool} />
+        ))}
+      </div>
+    </section>
 
     <!-- Hidden summit marker #3 -->
     <span class="summit-marker text-[6px] text-stone/30 dark:text-campfire-border/30 mt-8 inline-block cursor-pointer" data-summit="3" title="&#9650;">&#9650;</span>

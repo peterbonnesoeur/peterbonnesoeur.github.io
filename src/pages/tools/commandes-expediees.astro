@@ -1,0 +1,700 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Commandes expédiées → Excel | Maxime Bonnesoeur" currentPath="/tools">
+  <div class="max-w-6xl mx-auto px-6 py-24">
+    <a href="/tools" class="inline-flex items-center gap-2 text-sm text-graphite dark:text-dim hover:text-trail-orange dark:hover:text-trail-orange-dark transition-colors mb-8">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to tools
+    </a>
+
+    <h1 class="text-4xl font-heading text-slate dark:text-moonstone mb-2">Commandes expédiées → Excel</h1>
+    <p class="text-graphite dark:text-dim mb-8">
+      Déposez un PDF « Commandes expédiées ». Les lignes des sections « En cours / reliquats » et « En portefeuille » sont extraites, vous pouvez les corriger, puis télécharger le fichier Excel mis en forme.
+    </p>
+
+    <!-- Drop zone -->
+    <div
+      id="drop-zone"
+      class="relative border-2 border-dashed border-stone dark:border-campfire-border rounded-2xl p-12 text-center bg-warm-white dark:bg-campfire transition-colors hover:border-trail-orange dark:hover:border-trail-orange-dark cursor-pointer"
+    >
+      <input id="file-input" type="file" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+      <svg class="w-12 h-12 mx-auto mb-4 text-graphite dark:text-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path d="M7 18a4.6 4.4 0 01-.71-8.95 5.5 5.5 0 0111.3-2.5 6 6 0 01-.59 11.95H7zM12 12v9m-4-5l4-4 4 4"/>
+      </svg>
+      <p class="text-slate dark:text-moonstone font-medium mb-1">Glissez-déposez le PDF ici</p>
+      <p class="text-sm text-graphite dark:text-dim">ou cliquez pour choisir un fichier</p>
+    </div>
+
+    <!-- Status -->
+    <div id="status" class="mt-4 text-sm text-graphite dark:text-dim"></div>
+
+    <!-- Results panel -->
+    <div id="results" class="hidden mt-10">
+      <!-- Rows preview -->
+      <div class="bg-warm-white dark:bg-campfire rounded-2xl border border-stone dark:border-campfire-border p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="font-heading text-xl text-slate dark:text-moonstone">Lignes extraites (<span id="row-count">0</span>)</h2>
+          <button id="add-row" class="text-xs px-3 py-1 rounded-full bg-trail-orange/10 text-trail-orange dark:bg-trail-orange-dark/10 dark:text-trail-orange-dark hover:bg-trail-orange/20 dark:hover:bg-trail-orange-dark/20 transition-colors cursor-pointer">+ Ajouter une ligne</button>
+        </div>
+        <p class="text-xs text-graphite dark:text-dim mb-3">Cliquez sur une cellule pour corriger. Les modifications seront reflétées dans le fichier Excel.</p>
+        <div class="overflow-auto max-h-[600px] rounded-lg border border-stone dark:border-campfire-border">
+          <table id="rows-table" class="w-full text-xs">
+            <thead class="sticky top-0 z-10 bg-[#305496] text-white">
+              <tr>
+                <th class="px-2 py-2 text-left font-semibold">Section</th>
+                <th class="px-2 py-2 text-left font-semibold">Date cmde</th>
+                <th class="px-2 py-2 text-left font-semibold">Date prépa</th>
+                <th class="px-2 py-2 text-left font-semibold">N° cmde</th>
+                <th class="px-2 py-2 text-left font-semibold">N° dossier</th>
+                <th class="px-2 py-2 text-left font-semibold">Reliquat</th>
+                <th class="px-2 py-2 text-left font-semibold">Origine</th>
+                <th class="px-2 py-2 text-left font-semibold">Etat</th>
+                <th class="px-2 py-2 text-left font-semibold">Article</th>
+                <th class="px-2 py-2 text-left font-semibold">Marque</th>
+                <th class="px-2 py-2 text-left font-semibold">Référence</th>
+                <th class="px-2 py-2 text-left font-semibold">Libellé</th>
+                <th class="px-2 py-2 text-left font-semibold">Qté</th>
+                <th class="px-2 py-2 text-left font-semibold">Dispo</th>
+                <th class="px-2 py-2 text-left font-semibold">Dispo total</th>
+                <th class="px-2 py-2 text-left font-semibold">Délai</th>
+                <th class="px-2 py-2 text-left font-semibold">PU HT</th>
+                <th class="px-2 py-2 text-left font-semibold">Réf. / commentaire</th>
+                <th class="px-2 py-2 font-semibold w-8"></th>
+              </tr>
+            </thead>
+            <tbody id="rows-body" class="text-slate dark:text-moonstone"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 items-center">
+        <button
+          id="download-btn"
+          class="px-6 py-3 bg-trail-orange text-white rounded-xl font-medium hover:bg-trail-orange-dark transition-colors cursor-pointer shadow-sm hover:shadow-md"
+        >
+          Télécharger le fichier Excel
+        </button>
+        <button
+          id="reset-btn"
+          class="px-4 py-3 text-sm text-graphite dark:text-dim hover:text-slate dark:hover:text-moonstone transition-colors cursor-pointer"
+        >
+          Recommencer
+        </button>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script is:inline src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script is:inline>
+  // --- PDF.js worker config ---
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+  // --- Editable column keys (must match table headers above) ---
+  const COLS = [
+    'section', 'dateCmde', 'datePrepa',
+    'cmde', 'dossier', 'reliquat',
+    'origine', 'etat',
+    'article', 'marque', 'reference',
+    'libelle', 'qte',
+    'dispo', 'dispoTotal', 'delai',
+    'puHt', 'commentaire',
+  ];
+
+  let state = { rows: [] };
+
+  // --- DOM refs ---
+  const dropZone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const statusEl = document.getElementById('status');
+  const results = document.getElementById('results');
+  const rowsBody = document.getElementById('rows-body');
+  const rowCountEl = document.getElementById('row-count');
+  const downloadBtn = document.getElementById('download-btn');
+  const resetBtn = document.getElementById('reset-btn');
+  const addRowBtn = document.getElementById('add-row');
+
+  // --- Drop-zone wiring ---
+  ['dragenter', 'dragover'].forEach(ev => dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.add('border-trail-orange', 'dark:border-trail-orange-dark');
+  }));
+  ['dragleave', 'drop'].forEach(ev => dropZone.addEventListener(ev, e => {
+    e.preventDefault();
+    dropZone.classList.remove('border-trail-orange', 'dark:border-trail-orange-dark');
+  }));
+  dropZone.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+  fileInput.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) handleFile(f);
+  });
+
+  async function handleFile(file) {
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      setStatus('Le fichier doit être un PDF.', 'error');
+      return;
+    }
+    setStatus('Analyse du PDF…');
+    try {
+      const parsed = await parsePdf(file);
+      if (!parsed.rows.length) {
+        setStatus('Aucune ligne détectée. Le format de ce PDF n\'est peut-être pas reconnu.', 'error');
+        return;
+      }
+      state = parsed;
+      renderRows();
+      results.classList.remove('hidden');
+      setStatus(`${parsed.rows.length} ligne(s) extraite(s).`, 'ok');
+    } catch (err) {
+      console.error(err);
+      setStatus('Erreur: ' + (err.message || 'Impossible de lire le PDF.'), 'error');
+    }
+  }
+
+  function setStatus(msg, level) {
+    statusEl.textContent = msg || '';
+    statusEl.className = 'mt-4 text-sm ' + (
+      level === 'error' ? 'text-ridge-red dark:text-ridge-red-dark' :
+      level === 'ok' ? 'text-forest-green dark:text-forest-green-dark' :
+      'text-graphite dark:text-dim'
+    );
+  }
+
+  // ------------------------------------------------------------------
+  //  PDF PARSING
+  // ------------------------------------------------------------------
+  async function parsePdf(file) {
+    const buf = new Uint8Array(await file.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+
+    // Collect text items per page with normalized top-down Y. We also
+    // compute a GLOBAL y (page offset + local y) so that cross-page row
+    // continuations (e.g. a libellé that wraps from the bottom of page N
+    // onto the top of page N+1) can be matched to the correct row anchor.
+    const pages = [];
+    let yOffset = 0;
+    for (let p = 1; p <= pdf.numPages; p++) {
+      const page = await pdf.getPage(p);
+      const viewport = page.getViewport({ scale: 1 });
+      const content = await page.getTextContent();
+      const items = [];
+      for (const it of content.items) {
+        const s = it.str.replace(/\s+$/, '');
+        if (!s) continue;
+        const x = it.transform[4];
+        const localY = viewport.height - it.transform[5];
+        items.push({ str: s, x, y: localY, gy: yOffset + localY });
+      }
+      pages.push({ items, width: viewport.width, height: viewport.height });
+      yOffset += viewport.height;
+    }
+
+    const allLines = [];
+    for (let pi = 0; pi < pages.length; pi++) {
+      for (const line of groupByLine(pages[pi].items)) {
+        allLines.push({ line, page: pi });
+      }
+    }
+
+    // Find column X positions from the "Commandes en cours" table header.
+    // The header is split across stacked lines; we anchor on words that are
+    // unique to that table: Origine, Etat, Article, Libellé, Dispo.
+    const colX = findColumnsInCours(allLines);
+    if (!colX) {
+      throw new Error('En-tête de colonnes introuvable dans le PDF.');
+    }
+
+    // Pass 1: walk lines, tag each with its section, drop noise.
+    // We can't use a streaming row-anchor approach because in the
+    // "En portefeuille" section, the Dos: anchor sits mid-row (after
+    // the first date, libellé prefix, etc.). Instead we identify
+    // anchors and then assign each kept line to the nearest anchor
+    // by Y on the same page+section.
+    const tagged = [];
+    let section = null;
+    for (const { line, page } of allLines) {
+      const text = line.map(i => i.str).join(' ').trim();
+      if (!text) continue;
+
+      if (/^Vos commandes PRO EST/i.test(text)) continue;
+
+      if (/^Commandes\s+expédiées$/i.test(text)) { section = 'expediees'; continue; }
+      if (/^Commandes\s+en\s+cours\s*\/\s*reliquats$/i.test(text)) { section = 'en_cours'; continue; }
+      if (/^En\s+cours\s+de\s+préparation\s*\/\s*reliquats\s+de\s+préparation$/i.test(text)) { section = 'en_cours'; continue; }
+      if (/^En\s+portefeuille$/i.test(text)) { section = 'portefeuille'; continue; }
+      if (/^En\s+attente$/i.test(text)) { section = 'en_attente'; continue; }
+
+      if (/^Récépissé\s+N°/i.test(text)) continue;
+
+      // Repeated column header — skip when 3+ unique header anchors present.
+      const tl = text.toLowerCase();
+      const hdrHits = ['origine', 'etat', 'libell', 'dispo', 'qté', 'pu ht'].filter(a => tl.includes(a)).length;
+      if (hdrHits >= 3) continue;
+      if (/^(date de|commande|préparation|n°\s*cmde|n°\s*dossier|origine|etat|article|libellé|qté|dispo|pu\s*ht|réf\.?\s*cde\s*\/?|commentaire)$/i.test(text)) continue;
+      // Multi-word lines composed entirely of header tokens (e.g. "N° cmde
+      // Réf. cde /" or "N° dossier commentaire" appearing on page-top
+      // header repetitions).
+      const HEADER_TOKENS = new Set(['date', 'de', 'commande', 'préparation', 'n°', 'cmde', 'dossier', 'origine', 'etat', 'article', 'libellé', 'libell', 'qté', 'qte', 'dispo', 'pu', 'ht', 'réf.', 'réf', 'cde', '/', 'commentaire']);
+      const allHeader = line.length >= 2 && line.every(it => HEADER_TOKENS.has(it.str.toLowerCase().trim()));
+      if (allHeader) continue;
+
+      if (!section) continue;
+      tagged.push({ line, page, section });
+    }
+
+    // Pass 2: collect candidate row anchors. Any line bearing Cde:/Dos: is
+    // a candidate; we then dedupe pairs within a single row (En cours rows
+    // have Cde: and Dos: on separate lines ~12pt apart; we keep the topmost).
+    const candidates = [];
+    for (const t of tagged) {
+      const cmdeBucket = collectColumnText(t.line, colX, 'cmde');
+      const hasCde = /\bCde\s*:\s*\d+/.test(cmdeBucket);
+      const hasDos = /\bDos\s*:\s*\d+/.test(cmdeBucket);
+      if (hasCde || hasDos) {
+        candidates.push({ gy: t.line[0].gy, page: t.page, section: t.section });
+      }
+    }
+    candidates.sort((a, b) => a.gy - b.gy);
+    const anchors = [];
+    for (const c of candidates) {
+      const last = anchors[anchors.length - 1];
+      if (last && last.section === c.section && c.gy - last.gy < 30) continue;
+      anchors.push(c);
+    }
+
+    if (!anchors.length) return { rows: [] };
+
+    // Pass 3: per (page, section), assign each line to its nearest anchor.
+    const rawRows = anchors.map(a => ({
+      section: a.section,
+      buckets: Array.from({ length: colX.positions.length }, () => []),
+    }));
+
+    for (const t of tagged) {
+      let bestIdx = -1;
+      let bestDist = Infinity;
+      for (let i = 0; i < anchors.length; i++) {
+        const a = anchors[i];
+        if (a.section !== t.section) continue;
+        const d = Math.abs(t.line[0].gy - a.gy);
+        if (d < bestDist) { bestDist = d; bestIdx = i; }
+      }
+      if (bestIdx < 0) continue;
+      const row = rawRows[bestIdx];
+      for (const it of t.line) {
+        const c = nearestColumn(it.x, colX.positions);
+        const cleaned = it.str.replace(/[■-◿⬀-⯿✀-➿]/g, '').trim();
+        if (cleaned) row.buckets[c].push({ str: cleaned, x: it.x, y: it.gy });
+      }
+    }
+
+    return { rows: rawRows.map(r => postProcessRow(r, colX)) };
+  }
+
+  // --- Y-clustering into visual lines ---
+  function groupByLine(items) {
+    const sorted = [...items].sort((a, b) => a.y - b.y || a.x - b.x);
+    const lines = [];
+    const TOL = 2.5;
+    for (const it of sorted) {
+      const last = lines[lines.length - 1];
+      if (last && Math.abs(it.y - last[0].y) <= TOL) {
+        last.push(it);
+      } else {
+        lines.push([it]);
+      }
+    }
+    for (const line of lines) line.sort((a, b) => a.x - b.x);
+    return lines;
+  }
+
+  // --- Find column X positions from the table-2 header band ---
+  // Strategy: locate the line whose items contain the most unique header
+  // anchors (Origine, Etat, Article, Libellé, Qté, Dispo, PU). From that line
+  // we read X for those columns. For the Date and N° cmde columns whose
+  // labels are stacked (Date de / commande / préparation, N° cmde / N° dossier),
+  // we look at neighbouring lines within a small Y window.
+  function findColumnsInCours(allLines) {
+    const ANCHORS_ON_LINE = ['origine', 'etat', 'article', 'libell', 'qt', 'dispo', 'pu', 'réf'];
+    let best = null;
+    let bestHits = 0;
+    for (let i = 0; i < allLines.length; i++) {
+      const items = allLines[i].line;
+      const tokens = items.map(it => it.str.toLowerCase());
+      let hits = 0;
+      for (const a of ANCHORS_ON_LINE) {
+        if (tokens.some(t => t === a || t.startsWith(a))) hits++;
+      }
+      if (hits > bestHits) { bestHits = hits; best = i; }
+    }
+    if (best == null || bestHits < 5) return null;
+
+    const headerLine = allLines[best].line;
+    const headerY = headerLine[0].y;
+    const sameBand = allLines.filter((_, i) => Math.abs(allLines[i].line[0].y - headerY) <= 30 && allLines[i].page === allLines[best].page);
+    const bandItems = sameBand.flatMap(l => l.line);
+
+    // Helper: find X of first item whose lowercase string starts with prefix.
+    const findX = (prefix, items = bandItems) => {
+      const m = items.find(it => it.str.toLowerCase().startsWith(prefix));
+      return m ? m.x : null;
+    };
+
+    const dateX = findX('commande') ?? findX('date') ?? findX('préparation');
+    const cmdeX = findX('n°') ?? null;
+    const origineX = findX('origine');
+    const etatX = findX('etat');
+    const articleX = findX('article');
+    const libelleX = findX('libell');
+    const qteX = findX('qt');
+    const dispoX = findX('dispo');
+    const puX = findX('pu');
+    const refX = findX('réf');
+
+    // Validate we have everything we need (cmdeX may be null in worst case;
+    // fall back by interpolating between dateX and origineX).
+    const xs = [dateX, cmdeX, origineX, etatX, articleX, libelleX, qteX, dispoX, puX, refX];
+    if (xs.some(v => v == null)) return null;
+
+    return {
+      positions: xs,
+      keys: ['date', 'cmde', 'origine', 'etat', 'article', 'libelle', 'qte', 'dispo', 'pu', 'ref'],
+    };
+  }
+
+  // Snap an X coordinate to the nearest column index.
+  function nearestColumn(x, positions) {
+    let best = 0;
+    let bestDist = Math.abs(x - positions[0]);
+    for (let i = 1; i < positions.length; i++) {
+      const d = Math.abs(x - positions[i]);
+      if (d < bestDist) { best = i; bestDist = d; }
+    }
+    return best;
+  }
+
+  // Collect text from a single line, restricted to one named column.
+  function collectColumnText(line, colX, key) {
+    const idx = colX.keys.indexOf(key);
+    if (idx < 0) return '';
+    const parts = [];
+    for (const it of line) {
+      if (nearestColumn(it.x, colX.positions) === idx) parts.push(it.str);
+    }
+    return parts.join(' ');
+  }
+
+  // ------------------------------------------------------------------
+  //  ROW POST-PROCESSING
+  // ------------------------------------------------------------------
+  function postProcessRow(raw, colX) {
+    // Each bucket holds {str, x, y} items. Sort by y then x and join.
+    const bucketText = (key) => {
+      const i = colX.keys.indexOf(key);
+      if (i < 0) return '';
+      const items = (raw.buckets[i] || []).slice().sort((a, b) => a.y - b.y || a.x - b.x);
+      return items.map(it => it.str).join(' ').replace(/\s+/g, ' ').trim();
+    };
+
+    // Search for a pattern across ALL buckets — used for cells whose contents
+    // can drift slightly outside the strict column boundary (e.g. the Délai
+    // date "4/07.05.2026" is sometimes typeset with a different X than the
+    // Dispo column header).
+    const findAcrossBuckets = (regex) => {
+      for (const bucket of raw.buckets) {
+        const txt = bucket.map(it => it.str).join(' ');
+        const m = txt.match(regex);
+        if (m) return m;
+      }
+      return null;
+    };
+
+    const dateText = bucketText('date');
+    const cmdeText = bucketText('cmde');
+    const origine = bucketText('origine');
+    const etat = bucketText('etat');
+    const article = bucketText('article');
+    const libelle = bucketText('libelle');
+    const qteText = bucketText('qte');
+    const dispoText = bucketText('dispo');
+    const puText = bucketText('pu');
+    const commentaire = bucketText('ref');
+
+    // Dates: extract two DD/MM/YYYY occurrences (1st = commande, 2nd = prépa).
+    const dates = [...dateText.matchAll(/\b(\d{2}\/\d{2}\/\d{4})\b/g)].map(m => m[1]);
+    const dateCmde = dates[0] || '';
+    const datePrepa = dates[1] || dates[0] || '';
+
+    // N° cmde column: parse Cde, Dos, Reliquat.
+    const cmdeMatch = cmdeText.match(/Cde\s*:\s*(\d+)/i);
+    const dosMatch = cmdeText.match(/Dos\s*:\s*(\d+)/i);
+    const relMatch = cmdeText.match(/Reliquat\s*\(\s*cde\s*:\s*(\d+)\s*\)/i);
+
+    // Article: split on first " - ".
+    const artClean = article.replace(/\s+/g, ' ').trim();
+    let marque = '', reference = '';
+    const dashIdx = artClean.indexOf(' - ');
+    if (dashIdx > -1) {
+      marque = artClean.slice(0, dashIdx).trim();
+      reference = artClean.slice(dashIdx + 3).trim();
+    } else if (artClean) {
+      marque = artClean;
+    }
+
+    // Qté: first integer found.
+    const qteM = qteText.match(/\d+/);
+    const qte = qteM ? parseInt(qteM[0], 10) : '';
+
+    // Dispo: "X / Y". Délai date can drift outside the dispo column, so
+    // search the entire row for the dotted-date pattern (e.g. 4/07.05.2026
+    // or 27/20.05.2026 — that's "27 expected by 20.05.2026" in their format).
+    const dispoM = dispoText.match(/(\d+)\s*\/\s*(\d+)/);
+    const dispo = dispoM ? parseInt(dispoM[1], 10) : '';
+    const dispoTotal = dispoM ? parseInt(dispoM[2], 10) : '';
+    const delaiM = findAcrossBuckets(/Délai\s*:/i)
+      ? findAcrossBuckets(/(\d{1,3}\s*\/\s*\d{1,2}\.\d{2}\.\d{4})/)
+      : null;
+    const delai = delaiM ? delaiM[1].replace(/\s+/g, '') : '';
+
+    // PU HT: parse "1 177,44 €" → 1177.44.
+    const puClean = puText.replace(/€/g, '').replace(/\s+/g, '').replace(',', '.');
+    const puHt = puClean ? (Number.isFinite(parseFloat(puClean)) ? parseFloat(puClean) : '') : '';
+
+    // Origine: just take the trimmed value (covers "Extranet" or "Extranet FdV").
+    const origineClean = origine.replace(/\s+/g, ' ').trim();
+
+    // Etat: strip leading/trailing whitespace, drop progress glyph remnants.
+    const etatClean = etat.replace(/\s+/g, ' ').trim();
+
+    // Section label.
+    const sectionLabel = (
+      raw.section === 'expediees' ? 'Expédiées' :
+      raw.section === 'en_cours' ? 'En cours' :
+      raw.section === 'portefeuille' ? 'Portefeuille' :
+      raw.section === 'en_attente' ? 'En attente' : ''
+    );
+
+    return {
+      section: sectionLabel,
+      dateCmde, datePrepa,
+      cmde: cmdeMatch ? cmdeMatch[1] : '',
+      dossier: dosMatch ? dosMatch[1] : '',
+      reliquat: relMatch ? relMatch[1] : '',
+      origine: origineClean,
+      etat: etatClean,
+      article: artClean,
+      marque, reference,
+      libelle: libelle.replace(/\s+/g, ' ').trim(),
+      qte,
+      dispo, dispoTotal,
+      delai,
+      puHt,
+      commentaire: commentaire.replace(/\s+/g, ' ').trim(),
+    };
+  }
+
+  // ------------------------------------------------------------------
+  //  UI RENDERING
+  // ------------------------------------------------------------------
+  function renderRows() {
+    rowsBody.innerHTML = '';
+    state.rows.forEach((row, i) => rowsBody.appendChild(buildRowTr(row, i)));
+    rowCountEl.textContent = state.rows.length;
+  }
+
+  function buildRowTr(row, index) {
+    const tr = document.createElement('tr');
+    tr.className = (index % 2 === 0 ? 'bg-parchment dark:bg-night' : 'bg-warm-white dark:bg-campfire') + ' border-t border-stone dark:border-campfire-border';
+    for (const col of COLS) {
+      const td = document.createElement('td');
+      td.className = 'px-2 py-1 align-top';
+      td.contentEditable = 'true';
+      td.spellcheck = false;
+      const v = row[col];
+      td.textContent = v === undefined || v === null ? '' : String(v);
+      td.dataset.col = col;
+      td.addEventListener('input', () => {
+        state.rows[index][col] = td.textContent;
+      });
+      tr.appendChild(td);
+    }
+    const rm = document.createElement('td');
+    rm.className = 'px-2 py-1 align-top text-center';
+    const btn = document.createElement('button');
+    btn.textContent = '×';
+    btn.className = 'text-graphite dark:text-dim hover:text-ridge-red text-lg leading-none cursor-pointer';
+    btn.title = 'Supprimer la ligne';
+    btn.addEventListener('click', () => {
+      state.rows.splice(index, 1);
+      renderRows();
+    });
+    rm.appendChild(btn);
+    tr.appendChild(rm);
+    return tr;
+  }
+
+  addRowBtn.addEventListener('click', () => {
+    const last = state.rows[state.rows.length - 1] || {};
+    const empty = Object.fromEntries(COLS.map(k => [k, '']));
+    state.rows.push({ ...empty, section: last.section || 'En cours' });
+    renderRows();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    state = { rows: [] };
+    results.classList.add('hidden');
+    fileInput.value = '';
+    setStatus('');
+  });
+
+  // ------------------------------------------------------------------
+  //  EXCEL GENERATION
+  // ------------------------------------------------------------------
+  downloadBtn.addEventListener('click', async () => {
+    try {
+      downloadBtn.disabled = true;
+      downloadBtn.textContent = 'Génération…';
+      if (typeof ExcelJS === 'undefined') {
+        throw new Error('La bibliothèque ExcelJS n\'est pas chargée (vérifiez la connexion).');
+      }
+      const blob = await buildExcel(state);
+      const filename = makeFilename();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setStatus(`Fichier téléchargé: ${filename}`, 'ok');
+    } catch (err) {
+      console.error('[commandes-expediees] download error:', err);
+      setStatus('Erreur lors de la génération: ' + (err.message || err), 'error');
+    } finally {
+      downloadBtn.disabled = false;
+      downloadBtn.textContent = 'Télécharger le fichier Excel';
+    }
+  });
+
+  function makeFilename() {
+    const d = new Date();
+    const stamp = `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`;
+    return `commandes-expediees-${stamp}.xlsx`;
+  }
+
+  async function buildExcel({ rows }) {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('Commandes');
+
+    const thin = { style: 'thin', color: { argb: 'FFBFBFBF' } };
+    const border = { top: thin, bottom: thin, left: thin, right: thin };
+
+    // --- Title row ---
+    ws.mergeCells('A1:R1');
+    const titleCell = ws.getCell('A1');
+    titleCell.value = 'Commandes expédiées';
+    titleCell.font = { name: 'Arial', bold: true, size: 14 };
+    titleCell.alignment = { horizontal: 'center', vertical: 'center' };
+
+    // --- Header row (row 3) ---
+    const headers = [
+      'Section', 'Date cmde', 'Date prépa',
+      'N° cmde', 'N° dossier', 'Reliquat',
+      'Origine', 'Etat',
+      'Article', 'Marque', 'Référence',
+      'Libellé', 'Qté',
+      'Dispo', 'Dispo total', 'Délai',
+      'PU HT', 'Réf. / commentaire',
+    ];
+    headers.forEach((h, i) => {
+      const c = ws.getRow(3).getCell(i + 1);
+      c.value = h;
+      c.font = { name: 'Arial', bold: true, color: { argb: 'FFFFFFFF' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF305496' } };
+      c.alignment = { horizontal: 'center', vertical: 'center', wrapText: true };
+      c.border = border;
+    });
+    ws.getRow(3).height = 32;
+
+    // --- Data rows ---
+    rows.forEach((r, idx) => {
+      const rowIdx = 4 + idx;
+      const rr = ws.getRow(rowIdx);
+      const values = [
+        r.section, r.dateCmde, r.datePrepa,
+        r.cmde, r.dossier, r.reliquat,
+        r.origine, r.etat,
+        r.article, r.marque, r.reference,
+        r.libelle,
+        toNum(r.qte),
+        toNum(r.dispo),
+        toNum(r.dispoTotal),
+        r.delai,
+        toNum(r.puHt),
+        r.commentaire,
+      ];
+      values.forEach((v, i) => {
+        const c = rr.getCell(i + 1);
+        c.value = v;
+        c.font = { name: 'Arial', size: 10 };
+        c.alignment = { vertical: 'top', wrapText: true };
+        c.border = border;
+        if (rowIdx % 2 === 0) {
+          c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } };
+        }
+      });
+      // Format PU HT as currency.
+      if (typeof values[16] === 'number') {
+        rr.getCell(17).numFmt = '#,##0.00 €';
+      }
+    });
+
+    // --- Total row ---
+    const totalRow = 4 + rows.length;
+    const labelCell = ws.getRow(totalRow).getCell(12);
+    labelCell.value = 'TOTAL Qté';
+    labelCell.font = { name: 'Arial', bold: true };
+    labelCell.alignment = { horizontal: 'right' };
+
+    const totalQte = rows.reduce((acc, r) => {
+      const n = typeof r.qte === 'number' ? r.qte : parseInt(String(r.qte).replace(/[^\d]/g, ''), 10);
+      return acc + (Number.isFinite(n) ? n : 0);
+    }, 0);
+    const sumCell = ws.getRow(totalRow).getCell(13);
+    sumCell.value = totalQte;
+    sumCell.font = { name: 'Arial', bold: true };
+    sumCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF2CC' } };
+    sumCell.border = border;
+
+    // --- Column widths ---
+    const widths = [12, 12, 12, 12, 12, 12, 14, 22, 26, 14, 18, 44, 6, 8, 10, 16, 12, 28];
+    widths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+
+    // --- Freeze + autofilter ---
+    ws.views = [{ state: 'frozen', ySplit: 3 }];
+    if (rows.length > 0) {
+      ws.autoFilter = `A3:R${3 + rows.length}`;
+    }
+
+    const buffer = await wb.xlsx.writeBuffer();
+    return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+
+  function toNum(v) {
+    if (v === '' || v === null || v === undefined) return null;
+    if (typeof v === 'number') return v;
+    const s = String(v).trim();
+    if (!s) return null;
+    const n = parseFloat(s.replace(',', '.'));
+    return Number.isFinite(n) ? n : s;
+  }
+</script>
+</content>
+</invoke>
