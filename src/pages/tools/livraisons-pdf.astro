@@ -217,33 +217,62 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const clientName = titleMatch?.[2] ?? '';
     const date = titleMatch?.[3] ?? '';
 
-    // --- Find column X-positions from header row (repeated on every page) ---
-    // Anchor on unique words (the "N°" prefix repeats 4x so we don't use it).
-    // Order matters: left-to-right matches the table layout.
+    // --- Find column X-positions ---
+    // We need 8 anchors (cmde, dossier, colisage, bl, article, libelle, qte, commentaire).
+    // Strategy: prefer data-row positions (left-aligned, stable) over header positions
+    // (centered over wider columns — caused 64pt drift in the 2026-05 PDF format that
+    // misclassified Article items into N° BL).
+    // The header is still scanned to validate the file format and column order.
     const COL_ANCHORS = ['cmde', 'dossier', 'colisage', 'bl', 'article', 'libell', 'qt', 'réf'];
-    let colX = null;
     let debugHeader = '';
+    let headerFound = false;
     for (const pg of pages) {
       const lines = groupByLine(pg.items);
       for (const line of lines) {
         const joined = line.map(i => i.str).join(' ');
         const jl = joined.toLowerCase();
-        // Heuristic: the header line must contain several anchors at once.
         const hits = COL_ANCHORS.filter(a => jl.includes(a)).length;
         if (hits >= 5) {
           debugHeader = joined;
-          colX = findColumnXs(line, COL_ANCHORS);
-          if (colX) break;
+          headerFound = true;
+          break;
         }
       }
-      if (colX) break;
+      if (headerFound) break;
     }
-    if (!colX) {
-      const hint = debugHeader ? ` Ligne détectée: « ${debugHeader.slice(0, 120)} »` : '';
-      throw new Error('En-tête de colonnes introuvable dans le PDF.' + hint);
+    if (!headerFound) {
+      throw new Error('En-tête de colonnes introuvable dans le PDF.');
+    }
+
+    // Collect X positions from every data row (first 4 items are 5+ digit numbers).
+    // Use min X per column slot — data is left-aligned so min = column left edge.
+    const colSamples = [[], [], [], [], [], [], [], []];
+    for (const pg of pages) {
+      const lines = groupByLine(pg.items);
+      for (const line of lines) {
+        if (line.length < 4) continue;
+        const allNumeric = /^\d{5,}$/.test(line[0].str) &&
+                           /^\d{5,}$/.test(line[1].str) &&
+                           /^\d{5,}$/.test(line[2].str) &&
+                           /^\d{5,}$/.test(line[3].str);
+        if (!allNumeric) continue;
+        for (let i = 0; i < Math.min(line.length, 8); i++) {
+          colSamples[i].push(line[i].x);
+        }
+      }
+    }
+    if (!colSamples[0].length) {
+      throw new Error('Aucune ligne de données détectée dans le PDF.' +
+        (debugHeader ? ` En-tête vu: « ${debugHeader.slice(0, 120)} »` : ''));
+    }
+    const colX = colSamples.map(arr => arr.length ? Math.min(...arr) : null);
+    // If commentaire column never appeared, extrapolate so columnFor still has 8 slots.
+    if (colX[7] === null) {
+      const span = colX[6] - colX[5]; // typical column width near the right
+      colX[7] = colX[6] + (span > 0 ? span : 50);
     }
     // eslint-disable-next-line no-console
-    console.log('[livraisons-pdf] colX:', colX);
+    console.log('[livraisons-pdf] colX (data-derived):', colX);
 
     // --- Walk through all lines, assembling rows ---
     const rows = [];
@@ -346,39 +375,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     // Sort each line left-to-right
     for (const line of lines) line.sort((a, b) => a.x - b.x);
     return lines;
-  }
-
-  // Given a header line and anchor list (unique column keywords, lower-case),
-  // return X positions for each column start, in order.
-  // If a "N°" item sits just to the left of a matched anchor, use its X instead
-  // (that gives a slightly wider left boundary for N°-prefixed columns).
-  function findColumnXs(headerLine, anchors) {
-    const xs = [];
-    let searchFrom = 0;
-    for (const anchor of anchors) {
-      let foundIdx = -1;
-      for (let i = searchFrom; i < headerLine.length; i++) {
-        const s = headerLine[i].str.toLowerCase();
-        if (s.startsWith(anchor) || s.includes(anchor)) {
-          foundIdx = i;
-          break;
-        }
-      }
-      if (foundIdx === -1) return null;
-
-      let x = headerLine[foundIdx].x;
-      // Check if a "N°" item sits directly to the left (small X gap).
-      if (foundIdx > 0) {
-        const prev = headerLine[foundIdx - 1];
-        if (/^N°/i.test(prev.str.trim()) && x - prev.x < 40) {
-          x = prev.x;
-        }
-      }
-      xs.push(x);
-      searchFrom = foundIdx + 1;
-    }
-    for (let i = 1; i < xs.length; i++) if (xs[i] <= xs[i - 1]) return null;
-    return xs;
   }
 
   // Nearest-column assignment. PDF headers are often centered while data is
