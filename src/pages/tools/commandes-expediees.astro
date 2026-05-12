@@ -330,18 +330,23 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
   // we look at neighbouring lines within a small Y window.
   function findColumnsInCours(allLines) {
     const ANCHORS_ON_LINE = ['origine', 'etat', 'article', 'libell', 'qt', 'dispo', 'pu', 'réf'];
+    // Normalize tokens: lowercase + strip surrounding punctuation so e.g.
+    // "Réf." / "N°" / "Qté," all still match their anchor prefix.
+    const norm = s => s.toLowerCase().replace(/^[^\p{L}\p{N}°]+|[^\p{L}\p{N}°]+$/gu, '');
     let best = null;
     let bestHits = 0;
     for (let i = 0; i < allLines.length; i++) {
       const items = allLines[i].line;
-      const tokens = items.map(it => it.str.toLowerCase());
+      const tokens = items.map(it => norm(it.str));
       let hits = 0;
       for (const a of ANCHORS_ON_LINE) {
         if (tokens.some(t => t === a || t.startsWith(a))) hits++;
       }
       if (hits > bestHits) { bestHits = hits; best = i; }
     }
-    if (best == null || bestHits < 5) return null;
+    // 4 hits is enough — the newer FINDIS export drops the PU HT column and
+    // future variants may drop more. We validate the result below.
+    if (best == null || bestHits < 4) return null;
 
     const headerLine = allLines[best].line;
     const headerY = headerLine[0].y;
@@ -362,18 +367,27 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
     const libelleX = findX('libell');
     const qteX = findX('qt');
     const dispoX = findX('dispo');
-    const puX = findX('pu');
+    const puX = findX('pu'); // optional: newer "Commandes expédiées" PDFs dropped the PU HT column
     const refX = findX('réf');
 
-    // Validate we have everything we need (cmdeX may be null in worst case;
-    // fall back by interpolating between dateX and origineX).
-    const xs = [dateX, cmdeX, origineX, etatX, articleX, libelleX, qteX, dispoX, puX, refX];
-    if (xs.some(v => v == null)) return null;
+    // Required columns. puX is intentionally excluded — its absence in the
+    // newer report format must not abort detection.
+    const required = { date: dateX, cmde: cmdeX, origine: origineX, etat: etatX, article: articleX, libelle: libelleX, qte: qteX, dispo: dispoX, ref: refX };
+    if (Object.values(required).some(v => v == null)) return null;
 
-    return {
-      positions: xs,
-      keys: ['date', 'cmde', 'origine', 'etat', 'article', 'libelle', 'qte', 'dispo', 'pu', 'ref'],
-    };
+    const keys = ['date', 'cmde', 'origine', 'etat', 'article', 'libelle', 'qte', 'dispo'];
+    const positions = [dateX, cmdeX, origineX, etatX, articleX, libelleX, qteX, dispoX];
+    if (puX != null) { keys.push('pu'); positions.push(puX); }
+    keys.push('ref'); positions.push(refX);
+
+    // Sanity check: columns must be strictly left-to-right. If not, findX
+    // latched onto the wrong item (e.g. a body word that happened to share
+    // the prefix) and bucketing would be garbage — better to bail.
+    for (let i = 1; i < positions.length; i++) {
+      if (positions[i] <= positions[i - 1]) return null;
+    }
+
+    return { positions, keys };
   }
 
   // Snap an X coordinate to the nearest column index.
